@@ -30,6 +30,7 @@ jQuery(document).ready(function(){
             }   
         });
     });
+    
 });
 //json Parse to HTML
 function span_parser_alert(jsonData){
@@ -59,4 +60,32 @@ jQuery(document).ready(function(){
         });
         
     });
+
+
+    jQuery("#delete_all_p").click(function(e){
+        e.preventDefault();
+        //alert(1);
+        jQuery.ajax({
+            type:"POST",
+            url:locsData.admin_url + 'admin-ajax.php?action=delete_all_products',
+            data:{
+                _nonce : locsData.csv_nonce
+            },
+            success:function(r){
+                //alert(r);
+                //jQuery('#test_product_import_ajdiv').html(r);
+                jQuery('#csv_ajax_table').html(r);
+                
+            }
+        });
+    });
 });
+
+
+/**
+ * Custom Javascript for CSV DropShip Imports 
+ * Page : page=dropship-providers 
+ * File : DSI_Dropship_Providers_Views
+ * 
+ * 
+ */

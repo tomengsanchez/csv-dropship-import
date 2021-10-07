@@ -10,7 +10,6 @@ class DSI_Products extends DSI_Loader{
     public function __construct(){
         
     }
-
     public function send_product_fields(){
         $this->product_fields = ['a','b','c'];
     }

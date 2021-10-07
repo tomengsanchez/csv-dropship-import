@@ -28,7 +28,12 @@
                 <td>
                     <input type='file' name='csv_file' id='csv_file'>
                 </td>
-                <td><input type='submit' id='csv_file_submit' value='Upload' accept='csv'></td>
+                <td><input type='submit' id='csv_file_submit' value='Upload' accept='csv'>
+                <button id='delete_all_p'>Delete All</button>
+                    <div id='delete_ajxdiv'>
+
+                    </div>
+            </td>
             </tr>
         </table>
 </fieldset>

@@ -14,7 +14,10 @@
                     <div id='test_product_import_ajdiv'></div>
                 </div>
                 <div class="welcome-panel-column">
-                    <button id='test_product_import'>Test Product Delete</button>
+                    <button id='delete_all_p1'>Delete All</button>
+                    <div id='delete_ajxdiv1'>
+
+                    </div>
                 </div>
             </div>
         </div>
