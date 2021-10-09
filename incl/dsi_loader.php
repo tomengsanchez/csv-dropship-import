@@ -18,6 +18,11 @@ Class DSI_Loader{
         include_once  __DIR__ . "/dsi_enqueue.php";
         include_once  __DIR__ . "/dsi_admin_menu.php";
         include_once  __DIR__ . "/dsi_custon_functions.php";
+        // foreach(glob("/../ajaxes/*.php") as $filename){
+        //     include_once  __DIR__ . $filename;
+        // }
+        include_once  __DIR__ . "/../ajaxes/DSI_Providers_Page_ajax.php";
+        include_once  __DIR__ . "/../ajaxes/Main-Page_ajax.php";
         include_once  __DIR__ . "/ajaxes.php";
     }
     public function load_controller($cntrlr){
