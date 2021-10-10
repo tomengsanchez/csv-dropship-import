@@ -106,9 +106,10 @@ function test_import($csv_file,$wc_fields){
         array('_backorders','_backorders'),
         array('_stock','_stock')
     );
-
+    echo "Hellow";
     $line = fgets($fo);
     echo $line;
+    
     ar_to_pre($prd->ds_assign_column($sample_data,$head));
     
     
