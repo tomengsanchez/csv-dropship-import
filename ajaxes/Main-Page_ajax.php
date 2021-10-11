@@ -106,18 +106,18 @@ function test_import($csv_file,$wc_fields){
         array('_backorders','_backorders'),
         array('_stock','_stock')
     );
-<<<<<<< HEAD
+
     $lines_of_values = array();
     
     $prd->read_csv_lines($fo);// read the file
     //echo $line;
-=======
-    echo "Hellow";
+
+    
     $line = fgets($fo);
     echo $line;
     
-    ar_to_pre($prd->ds_assign_column($sample_data,$head));
->>>>>>> 927c0a4795209a7fa66b6a89358fdf949772bd65
+    //ar_to_pre($prd->ds_assign_column($sample_data,$head));
+
     
     
 

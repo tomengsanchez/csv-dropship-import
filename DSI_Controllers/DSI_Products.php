@@ -21,6 +21,10 @@ class DSI_Products extends DSI_Loader{
         'default' => 'simple'
     );
     var $dropship_company = array();
+
+    var $image = array();
+
+    
     public function __construct(){
         
     }
@@ -114,7 +118,7 @@ class DSI_Products extends DSI_Loader{
      * 
      */
     function import_csv_to_wc($column_assigment= array(),$lines = array()){    
-        echo count($lines);
+        //echo count($lines);
         for($x = 0; $x < count($lines); $x++){//loop each line
             //loop each field
             echo "Impor these line " . $x;
