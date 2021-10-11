@@ -106,12 +106,17 @@ function test_import($csv_file,$wc_fields){
         array('_backorders','_backorders'),
         array('_stock','_stock')
     );
+    $lines_of_values = array();
+    
+    $prd->read_csv_lines($fo);// read the file
+    //echo $line;
+    
+    
 
-    $line = fgets($fo);
-    echo $line;
-    ar_to_pre($prd->ds_assign_column($sample_data,$head));
-    
-    
+    $column_assign = $prd->ds_assign_column($sample_data,$head);
+    //print_r($column_assign);
+    $prd->import_csv_to_wc($column_assign,$prd->data_per_lines);
+
 }
 
 ?>

@@ -5,12 +5,22 @@
  * @param array $collect_meta_to_import - collect all the final meta/field before import
  * 
  * 
+ * 
  */
 class DSI_Products extends DSI_Loader{
     /** product information  */
     /** collect all the final meta/field before import */
-    var $collect_meta_to_import = array();
 
+    var $products = array();
+    var $collect_meta_to_import = array();
+    var $data_per_lines = array();
+
+    var $product_type = '';
+    var $product_id = '';
+    var $product_type_others = array(
+        'default' => 'simple'
+    );
+    var $dropship_company = array();
     public function __construct(){
         
     }
@@ -62,6 +72,8 @@ class DSI_Products extends DSI_Loader{
      * Assigns the product meta field to the specific solumn of the csv
      * @param array $data - array of metafield and converted meta field format from csv headingarray('meta_field','_')
      * @param array $heading array of the heading of the csv file
+     * 
+     * @return array $assigned_field_column collection of assigned field column
      * )
      * 
      */
@@ -76,10 +88,71 @@ class DSI_Products extends DSI_Loader{
                     //echo $heading[$i];
                 }
             }
-            array_push($assigned_field_column,array($d[0] . "isthe - wc_product_meta",$column_number . " is the csv_col#"));// will make the assigned colum and columng number to search
+            // will make the assigned colum and columng number to search
+            array_push($assigned_field_column,array($d[0],$column_number));
             $x++;
         }
         return $assigned_field_column;
+    }
+    /**
+     * Read the file please use fo() and this function will set $data_per_lines to each lines
+     * 
+     * @param file file data $_FILE['name']['tmpname']
+     */ 
+    function read_csv_lines($file){
+        while(!feof($file)){
+            $lines = fgetcsv($file);
+            array_push($this->data_per_lines,$lines);
+        }
+    }
+    /**
+     * Import CSV to Woocommerce Products
+     *  
+     * @param array $column_assignment - collection of default_column and the csv_column number example : 'post_title'=> [10]
+     * @param array $lines csv_files columns and rows
+     * 
+     * 
+     */
+    function import_csv_to_wc($column_assigment= array(),$lines = array()){    
+        echo count($lines);
+        for($x = 0; $x < count($lines); $x++){//loop each line
+            //loop each field
+            echo "Impor these line " . $x;
+
+            echo "<br>";
+            echo "<table border=1>";
+            echo "<tr>";
+            
+            echo "<th>Index</th>";
+            echo "<th>Meta VAlue</th>";
+            echo "<th>Csv Column Number</th>";
+            echo "<th>Meta Value</th>";
+            echo "</tr>";
+            for($i = 0; $i < count($column_assigment);$i++ ){// loop each field
+
+                echo "<tr>";    
+                echo "<td> " . $i. "</td>";
+                echo "<td> " . $column_assigment[$i][0]. "</td>";
+                echo "<td> " . $column_assigment[$i][1]. "</td>";
+
+                $val = '';
+                if($column_assigment[$i][1] == 0){
+                    $val = 'Please Add Another meta field using : ' . $column_assigment[$i][0];
+                    
+                }   
+                else
+                    
+                    $val = $lines[$x][$column_assigment[$i][1]];
+                    if($i == 4){
+                        $val = $this->product_type_others['default'];
+                    }
+                echo "<td>";
+                    echo $val;
+                echo "</td>";
+                echo "</tr>";    
+            }
+            echo "</table>";
+        }
     }
     /**
      * 

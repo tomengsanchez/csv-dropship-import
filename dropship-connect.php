@@ -16,9 +16,9 @@
  * @wordpress-plugin
  * Plugin Name:       Dropship Imports
  * Plugin URI:        https://github.com/tomengsanchez
- * Description:       Imports Dropship Using CSV
+ * Description:       Imports Dropship Using CSV 
  * Version:           1.0.0
- * Author:            Tomeng
+ * Author:            Tomeng Sanchez Pogi
  * Author URI:        https://github.com/tomengsanchez
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
@@ -37,6 +37,5 @@ class Dropship_Import{
 		$loader = new DSI_Loader();
 	}
 }
-
 $ds = new Dropship_Import();
 $ds;
