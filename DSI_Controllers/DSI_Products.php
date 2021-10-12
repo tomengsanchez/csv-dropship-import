@@ -7,6 +7,12 @@
  * 
  * 
  */
+
+require __DIR__ . '/vendor/autoload.php';
+
+use Automattic\WooCommerce\Client;
+
+
 class DSI_Products extends DSI_Loader{
     /** product information  */
     /** collect all the final meta/field before import */
@@ -24,10 +30,11 @@ class DSI_Products extends DSI_Loader{
 
     var $image = array();
 
-    
+    var $final_fields_to_import = array();
+    var $final_values_to_import = array();
     public function __construct(){
         
-    }
+    }           
     
     function get_all_wc_default_field(){
         $default_field = array(
@@ -118,7 +125,9 @@ class DSI_Products extends DSI_Loader{
      * 
      */
     function import_csv_to_wc($column_assigment= array(),$lines = array()){    
-        //echo count($lines);
+        echo count($lines);   
+        
+
         for($x = 0; $x < count($lines); $x++){//loop each line
             //loop each field
             echo "Impor these line " . $x;
@@ -138,20 +147,20 @@ class DSI_Products extends DSI_Loader{
                 echo "<td> " . $i. "</td>";
                 echo "<td> " . $column_assigment[$i][0]. "</td>";
                 echo "<td> " . $column_assigment[$i][1]. "</td>";
-
+                array_push($this->final_fields_to_import,$column_assigment[$i][0]);
                 $val = '';
                 if($column_assigment[$i][1] == 0){
-                    $val = 'Please Add Another meta field using : ' . $column_assigment[$i][0];
-                    
+                    $val = 'Please Add Another meta field using : ' . $column_assigment[$i][0] . "-". $val = $lines[$x][$column_assigment[$i][1]];
                 }   
                 else
-                    
                     $val = $lines[$x][$column_assigment[$i][1]];
                     if($i == 4){
                         $val = $this->product_type_others['default'];
                     }
                 echo "<td>";
                     echo $val;
+                    array_push($this->final_values_to_import,$val);
+
                 echo "</td>";
                 echo "</tr>";    
             }
@@ -159,7 +168,174 @@ class DSI_Products extends DSI_Loader{
         }
     }
     /**
+     * This function will create products using rest
      * 
+     * @param array $field final fields
+     * @param array $value final values 
      */
+
+    public function dsi_create_products_rest(){
+        $woocommerce = new Client(
+            'http://localhost/ud/',
+            'ck_0ba977f283e08a5bc62bd3947cfe4a3c705e9c49',
+            'cs_d67316e5ce91a56b2d753732d4a54cd2f9a33e13',
+            [
+                'wp_api' => true,
+                'version' => 'wc/v3'
+            ]
+
+            ); 
+        //ar_to_pre($woocommerce->get('products'));
+        
+        $data = [
+            'name' => 'Premium Quality',
+            'type' => 'simple',
+            '_regular_price' => '21.99',
+            'description' => 'Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.',
+            'short_description' => 'Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.',
+            'categories' => [
+                [
+                    'id' => 9
+                ],
+                [
+                    'id' => 14 
+                ]
+            ],
+            'images' => [
+                [
+                    'src' => 'http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_2_front.jpg'
+                ],
+                [
+                    'src' => 'http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_2_back.jpg'
+                ]
+            ]
+        ];
+        ar_to_pre($data);
+        
+        ar_to_pre($woocommerce->post('products', $data));
+    }
+
+    /**
+     * This will create products using wpdb
+     */
+
+     public function dsi_create_products_wpdb($data_per_lines = array()){
+        //ar_to_pre($data_per_lines);
+        for($i = 1; $i < count($data_per_lines); $i++){// loop each line
+            $in = $i -1;
+            //ar_to_pre($data_per_lines[$i]);
+            $post_id = wp_insert_post( array(
+                
+                'post_title' => $data_per_lines[$in][10],
+                'post_content' => $data_per_lines[$in][16],
+                'post_status' => 'publish',
+                'post_type' => "product",
+            ) );
+            wp_set_object_terms( $post_id, 'simple', 'product_type' );
+            
+            update_post_meta( $post_id, '_visibility', 'visible' );
+            update_post_meta( $post_id, '_stock_status', 'instock');
+            update_post_meta( $post_id, 'total_sales', '0' );
+            update_post_meta( $post_id, '_downloadable', 'no' );
+            update_post_meta( $post_id, '_virtual', 'yes' );
+            update_post_meta( $post_id, '_regular_price', $data_per_lines[$in][11] );
+            update_post_meta( $post_id, '_sale_price', $data_per_lines[$in][6] );
+            update_post_meta( $post_id, '_purchase_note', '' );
+            update_post_meta( $post_id, '_featured', 'no' );
+            update_post_meta( $post_id, '_weight', '' );
+            update_post_meta( $post_id, '_length', '' );
+            update_post_meta( $post_id, '_width', '' );
+            update_post_meta( $post_id, '_height', '' );
+            update_post_meta( $post_id, '_sku', $data_per_lines[$in][1] );
+            update_post_meta( $post_id, '_product_attributes', array() );
+            update_post_meta( $post_id, 'sale_price_dates_from', '' );
+            update_post_meta( $post_id, 'sale_price_dates_to', '' );
+            update_post_meta( $post_id, '_price', $data_per_lines[$in][6] );
+            update_post_meta( $post_id, '_sold_individually', '' );
+            update_post_meta( $post_id, '_manage_stock', 'no' );
+            update_post_meta( $post_id, '_backorders', 'no' );
+            update_post_meta( $post_id, '_stock', '' );
+            echo "DONE";
+        }
+    }
+     /**
+      * For the Mean Time This will be used for AW Dropship
+      */
+     public function dsi_create_products_rest_aw_dropship($data_per_lines = array()){
+        $woocommerce = new Client(
+        'http://localhost/ud/',
+        'ck_0ba977f283e08a5bc62bd3947cfe4a3c705e9c49',
+        'cs_d67316e5ce91a56b2d753732d4a54cd2f9a33e13',
+        [
+            'wp_api' => true,
+            'version' => 'wc/v3'
+        ]
+
+        ); 
+      
+        for($i = 1; $i < count($data_per_lines); $i++){// loop each line
+
+            $in = $i-1;
+            //echo $data_per_lines[$i][23];echo "<br>";
+            $imgs =array();
+            if($data_per_lines[$in][23]){
+                array_push($imgs,
+                    ['src' => $data_per_lines[$in][23]]
+                );
+            }
+            if($data_per_lines[$in][24]){
+                array_push($imgs,
+                    ['src' => $data_per_lines[$in][24]]
+                );
+            }
+            if($data_per_lines[$in][25]){
+                array_push($imgs,
+                    ['src' => $data_per_lines[$in][25]]
+                );
+            }
+            if($data_per_lines[$in][26]){
+                array_push($imgs,
+                    ['src' => $data_per_lines[$in][26]]
+                );
+            }
+
+            $data = [
+                'name' => $data_per_lines[$in][10],
+                'type' => 'simple',
+                'regular_price' => $data_per_lines[$in][6],
+                'description' => $data_per_lines[$in][16],
+                'short_description' => $data_per_lines[$in][16],
+                'categories' => [
+                    [
+                        'id' => 9
+                    ],
+                    [
+                        'id' => 14 
+                    ]
+                ],
+                'images'=>$imgs,
+                'sku'=> $data_per_lines[$in][1]
+            ];
+            //echo "Done";
+            //print_r($woocommerce->get('products'));
+            //check if sku existing
+
+            $existing = $woocommerce->get('products',['sku'=>$data_per_lines[$in][1]]);
+            //echo $data_per_lines[$in][1];
+            if(count($existing) <= 0){
+                echo "insert";
+                $woocommerce->post('products', $data);  
+            }
+            else{
+                //echo $existing[0][1];
+                echo $existing[0]->id;
+                //ar_to_pre($existing);
+            }
+            echo "<br>";
+            //$woocommerce->post('products', $data);
+            
+        }
+        
+    }
 }
 ?>

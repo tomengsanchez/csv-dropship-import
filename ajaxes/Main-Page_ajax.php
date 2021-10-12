@@ -58,6 +58,8 @@ function uploadcsv_files_test(){
     //header('Content-Type:application/json');
     if(!wp_verify_nonce($_REQUEST['_nonce'],'csv_uploads')){
         echo "ERROR";
+    
+        
     }
     else{
         $mimesCSV = array('application/vnd.ms-excel','text/plain','text/csv','text/tsv');// check ever type of Acceptable CSV Files
@@ -82,29 +84,29 @@ function test_import($csv_file,$wc_fields){
     $head = fgetcsv($fo,10000,','); // Read The Heading
     $prd->set_meta_to_import();
     $sample_data = array(
-        array('post_title','_unit_name'),
-        array('post_content','_webpage_description_html'),
+        array('name','_unit_name'),
+        array('description','_webpage_description_html'),
         array('post_status','_status'),
         array('post_type,','post_type'),
         array('product_type','_product_type'),
-        array('_visibility','_status'),
+        array('visibility','_status'),
         array('total_sales','_total_sales'),
-        array('_downloadable','_downloadable'),
-        array('_virtual','_virtual'),
-        array('_sale_price','_sale_price'),
-        array('_regular_price','_unit_price'),
-        array('_featured','_featured'),
-        array('_weight','_unit_net_weight'),
-        array('_length','_length'),
-        array('_width','_width'),
-        array('_height','_height'),
-        array('_sku','_product_code'),
-        array('_product_attributes','EO'),
-        array('_sale_price_dates_from',''),
-        array('_sale_price_dtes_to',''),
-        array('_price','_price'),
-        array('_backorders','_backorders'),
-        array('_stock','_stock')
+        array('downloadable','_downloadable'),
+        array('virtual','_virtual'),
+        array('sale_price','_sale_price'),
+        array('regular_price','_unit_price'),
+        array('featured','_featured'),
+        array('weight','_unit_net_weight'),
+        array('length','_length'),
+        array('width','_width'),
+        array('height','_height'),
+        array('sku','_product_code'),
+        array('product_attributes','EO'),
+        array('sale_price_dates_from',''),
+        array('sale_price_dtes_to',''),
+        array('price','_price'),
+        array('backorders','_backorders'),
+        array('stock','_stock')
     );
 
     $lines_of_values = array();
@@ -116,14 +118,13 @@ function test_import($csv_file,$wc_fields){
     $line = fgets($fo);
     echo $line;
     
-    //ar_to_pre($prd->ds_assign_column($sample_data,$head));
-
-    
-    
-
     $column_assign = $prd->ds_assign_column($sample_data,$head);
     //print_r($column_assign);
-    $prd->import_csv_to_wc($column_assign,$prd->data_per_lines);
+
+    //$prd->import_csv_to_wc($column_assign,$prd->data_per_lines);//
+    
+    //$prd->dsi_create_products_rest_aw_dropship($prd->data_per_lines);
+    $prd->dsi_create_products_rest_aw_dropship($prd->data_per_lines);
 
 }
 

@@ -21,7 +21,7 @@ jQuery(document).ready(function(){
             processData: false,
             data:form_data,
             
-            success:function(res){
+            success:function(res,s){
                 jQuery('#csv_ajax_table').html(res);
                 // if(!res.message)
                 //     jQuery('#csv_ajax_table').html('12');
