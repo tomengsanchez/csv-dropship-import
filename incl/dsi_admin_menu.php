@@ -36,7 +36,9 @@ add_action('admin_menu',function(){
 });
 /** Functions Displays the Admin Submenu of Settings */
 function dashboard_import_settings(){
-    echo "Dropship Import Settings";
+    $dsi_settings = new DSI_Dropship_Import_Settings();
+    $dsi_settings->ds_load_settings_view();
+
 }
 
 

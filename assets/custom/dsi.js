@@ -85,7 +85,22 @@ jQuery(document).ready(function(){
 /**
  * Custom Javascript for CSV DropShip Imports 
  * Page : page=dropship-providers 
- * File : DSI_Dropship_Providers_Views
+ * File : DSI_Dropship_Providers_Views.php
  * 
  * 
  */
+
+
+
+
+
+
+/**
+ * Custom Javascript for Settings
+ * PAGE : page=dropship-import-settings
+ * File : DSI_Settings_View.php
+ */
+
+jQuery(document).ready(function(){
+    jQuery("#settings-tabs").tabs();
+});
