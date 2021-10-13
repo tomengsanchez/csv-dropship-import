@@ -7,11 +7,11 @@ class DSI_Plugin_mgmt{
     {  
         
     }
-    public function activation(){
-
+    public function dsi_activation(){
+        add_option( 'ds_developer','tomeng' );
     }
     public function deactivation(){
-
+        delete_option( 'dsi_developer');
     }
     public function delete(){
         
@@ -20,5 +20,8 @@ class DSI_Plugin_mgmt{
     
 }
 
-$gc_pm = new DSI_Plugin_mgmt();
+
+
+
+
 ?>

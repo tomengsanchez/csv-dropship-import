@@ -2,11 +2,43 @@
  * Custom Javascript for CSV DropShip Imports Page : page=dropship-import-page
  */
 
+ var nameReg = /^[A-Za-z]+$/;
+ var numberReg =  /^[0-9]+$/;
+ var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+
+
+ function validate_this(input_obj, reg_test){
+    input_obj.next('span').remove();
+    if(input_obj.val() == ""){
+        input_obj.after('<span class="error">'  + input_obj.attr('val_message') +'</span>');
+        return false;
+    }
+    else{
+        return true;
+    }
+     
+ }
+ function validate_these(input_ojects){
+    val_counter = 0;
+    
+    jQuery(input_ojects).each(function(){
+        if(validate_this(this)==false){
+            val_counter++;
+        }
+    });
+    if(val_counter == 0)
+        return true;
+    else  
+        return false;
+        
+    
+ }
+
 jQuery(document).ready(function(){
     //jQuery('.upload_control_group').controlgroup();
     jQuery('#csv_file_submit').click(function(e){
         e.preventDefault();
-        
+        jQuery('#csv_ajax_table').html('<h3>Please Wait While Importing...</h3>');
         var file_data = jQuery("#csv_file")[0].files[0]; //Get the File Input
         var form_data = new FormData(); // prepare form ddata
         form_data.append("csv_file",file_data); // Collect Form Data from the Inputs

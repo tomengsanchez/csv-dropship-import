@@ -172,13 +172,15 @@ class DSI_Products extends DSI_Loader{
      * 
      * @param array $field final fields
      * @param array $value final values 
+     * 
+     * 'ck_0ba977f283e08a5bc62bd3947cfe4a3c705e9c49','cs_d67316e5ce91a56b2d753732d4a54cd2f9a33e13'
      */
 
     public function dsi_create_products_rest(){
         $woocommerce = new Client(
             'http://localhost/ud/',
-            'ck_0ba977f283e08a5bc62bd3947cfe4a3c705e9c49',
-            'cs_d67316e5ce91a56b2d753732d4a54cd2f9a33e13',
+            get_option('dsi_wc_ck'),
+            get_option('dsi_wc_cs'),
             [
                 'wp_api' => true,
                 'version' => 'wc/v3'
@@ -262,10 +264,12 @@ class DSI_Products extends DSI_Loader{
       * For the Mean Time This will be used for AW Dropship
       */
      public function dsi_create_products_rest_aw_dropship($data_per_lines = array()){
+        $created = 0;
+        $updated = 0;
         $woocommerce = new Client(
         'http://localhost/ud/',
-        'ck_0ba977f283e08a5bc62bd3947cfe4a3c705e9c49',
-        'cs_d67316e5ce91a56b2d753732d4a54cd2f9a33e13',
+        get_option('dsi_wc_ck'),
+        get_option('dsi_wc_cs'),
         [
             'wp_api' => true,
             'version' => 'wc/v3'
@@ -323,19 +327,18 @@ class DSI_Products extends DSI_Loader{
             $existing = $woocommerce->get('products',['sku'=>$data_per_lines[$in][1]]);
             //echo $data_per_lines[$in][1];
             if(count($existing) <= 0){
-                echo "insert";
+                //echo "insert";
                 $woocommerce->post('products', $data);  
+                $created++;
             }
             else{
                 //echo $existing[0][1];
-                echo $existing[0]->id;
+                $woocommerce->put('products/' . $existing[0]->id, $data);
                 //ar_to_pre($existing);
+                $updated++;
             }
-            echo "<br>";
-            //$woocommerce->post('products', $data);
-            
         }
-        
+        echo "<h4>" . $created . " rows Created and " . $updated. " rows Updated</h4>";
     }
 }
 ?>

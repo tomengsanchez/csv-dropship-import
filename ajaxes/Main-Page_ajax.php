@@ -125,7 +125,7 @@ function test_import($csv_file,$wc_fields){
     
     //$prd->dsi_create_products_rest_aw_dropship($prd->data_per_lines);
     $prd->dsi_create_products_rest_aw_dropship($prd->data_per_lines);
-
+    
     
     
     

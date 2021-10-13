@@ -39,3 +39,21 @@ class Dropship_Import{
 }
 $ds = new Dropship_Import();
 $ds;
+
+
+
+//
+
+
+register_activation_hook( __FILE__, function(){
+	add_option( 'dsi_developer','tomengskiee');
+	add_option( 'dsi_wc_ck','');
+	add_option( 'dsi_wc_cs','');
+} );
+
+register_deactivation_hook(__FILE__, function(){
+	delete_option('dsi_developer');
+	delete_option('dsi_wc_cs');
+	delete_option('dsi_wc_ck');
+
+} );
