@@ -36,6 +36,10 @@ class DSI_Dropship_Import_Settings extends DSI_Loader{
      * Loads the Settings View
      */
     public function ds_load_settings_view(){
+        ?>
+            <h1 class="h1">Dropship CSV File Import Settings</h1>
+            <i>Configuration</i>
+        <?php 
         $this->load_view('DSI_Settings_View');
     }
 

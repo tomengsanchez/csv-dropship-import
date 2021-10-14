@@ -36,6 +36,7 @@ class DSI_Products extends DSI_Loader{
         
     }           
     
+    var $wc_api;
     function get_all_wc_default_field(){
         $default_field = array(
             'post_title',
@@ -264,10 +265,11 @@ class DSI_Products extends DSI_Loader{
       * For the Mean Time This will be used for AW Dropship
       */
      public function dsi_create_products_rest_aw_dropship($data_per_lines = array()){
+        header('Content-Type:application/json');
         $created = 0;
         $updated = 0;
         $woocommerce = new Client(
-        'http://localhost/ud/',
+        home_url(),
         get_option('dsi_wc_ck'),
         get_option('dsi_wc_cs'),
         [
@@ -276,7 +278,26 @@ class DSI_Products extends DSI_Loader{
         ]
 
         ); 
-      
+        try{
+            $woocommerce->get('orders');
+            $fieldsetclass = '';
+        }
+        catch( Exception $e){
+            $err = $e->getMessage();
+            if (strpos($err, 'key')){
+                echo json_encode(['message'=>'<h4>Consumer Key is Invalid</h4>']);
+                die();
+            }
+
+            if (strpos($err, 'signature')){
+                echo json_encode(['message'=>'<h4>Consumer Signature is Invalid</h4>']);
+                die();
+            }
+            
+            
+        }
+
+
         for($i = 1; $i < count($data_per_lines); $i++){// loop each line
 
             $in = $i-1;
@@ -338,7 +359,23 @@ class DSI_Products extends DSI_Loader{
                 $updated++;
             }
         }
-        echo "<h4>" . $created . " rows Created and " . $updated. " rows Updated</h4>";
+        $message =  "<h4>" . $created . " rows Created and " . $updated. " rows Updated</h4>";
+        echo json_encode([
+            'message' => $message
+        ]);
+    }
+    public function api_test_connect(){
+        $woocommerce = new Client(
+            home_url(),
+            get_option('dsi_wc_ck'),
+            get_option('dsi_wc_cs'),
+            [
+                'wp_api' => true,
+                'version' => 'wc/v3'
+            ]
+        ); 
+        $this->wc_api = $woocommerce;
+        
     }
 }
 ?>

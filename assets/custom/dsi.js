@@ -30,15 +30,13 @@
         return true;
     else  
         return false;
-        
-    
  }
 
 jQuery(document).ready(function(){
     //jQuery('.upload_control_group').controlgroup();
     jQuery('#csv_file_submit').click(function(e){
         e.preventDefault();
-        jQuery('#csv_ajax_table').html('<h3>Please Wait While Importing...</h3>');
+        jQuery('#csv_ajax_table').html('<h3>Please Wait...</h3>');
         var file_data = jQuery("#csv_file")[0].files[0]; //Get the File Input
         var form_data = new FormData(); // prepare form ddata
         form_data.append("csv_file",file_data); // Collect Form Data from the Inputs
@@ -54,7 +52,7 @@ jQuery(document).ready(function(){
             data:form_data,
             
             success:function(res,s){
-                jQuery('#csv_ajax_table').html(res);
+                jQuery('#csv_ajax_table').html(res.message);
                 // if(!res.message)
                 //     jQuery('#csv_ajax_table').html('12');
                 // else
@@ -121,10 +119,6 @@ jQuery(document).ready(function(){
  * 
  * 
  */
-
-
-
-
 
 
 /**

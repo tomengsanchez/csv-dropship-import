@@ -10,7 +10,51 @@
 <i>Lets you update your Woocommerce Products Using CSV</i>
 
 <hr>
-<fieldset>
+<?php 
+    $fieldsetclass = 'disabled';
+    if(get_option('dsi_wc_ck') == '' && get_option('dsi_wc_ck') ==''){
+        ?>
+        <div class="update-nag notice">
+            <b>WooCommerce Rest API Missing</b>
+            <p>Please set the Rest API to use Dropship Import See the Instruction Below</p>
+            <ol>
+                <li><p>Add Key the WooCommerce Rest API in the Advanced Settings of WooCommerce  <a href="<?php _e(home_url())?>/wp-admin/admin.php?page=wc-settings&tab=advanced&section=keys" target='_BLANK'>Click This link</a>.</li>
+                <li>Copy and Paste the Consumer Key and Consumer Secret Here <a href="<?php _e(home_url())?>/wp-admin/admin.php?page=dropship-import-settings#api" target='_BLANK'>Click Here</a></li>
+                <li>Refresh This Page <a href="<?php _e(home_url())?>/wp-admin/admin.php?page=dropship-import-page">Click Here</a></li>
+            </ol>
+        </div>
+        <?php    
+        // check if credentials is good
+        exit();
+    }
+    else{
+        $con = new DSI_Products();
+        $con->api_test_connect();
+
+        //$get = $con->wc_api->post('products',[]);
+        
+        //ar_to_pre($con->wc_api);
+        try{
+            $con->wc_api->get('orders');
+            $fieldsetclass = '';
+        }
+        catch( Exception $e){
+            $err = $e->getMessage();
+            if (strpos($err, 'key'))
+                echo "Consumer Key is Invalid";
+
+            if (strpos($err, 'signature'))
+                echo "Consumer Signature is Invalid"; 
+            
+            
+        }
+        //ar_to_pre($get);
+        
+       
+        
+    }
+?>
+<fieldset <?php echo $fieldsetclass;?>>
     <form method='post'action="" class="" enctype='multipart/form-data'>
         <table class="table">
             <tr>

@@ -15,20 +15,24 @@ add_action('wp_ajax_get_dsi_api_credentials',function(){
     }
     $output = json_encode(
         [
-            'message'=>$_POST['_nonce'],
+            'message'=>'ok',
             'ck'=>get_option('dsi_wc_ck'),
             'cs'=>get_option('dsi_wc_cs')
         ]       
     );
     echo $output;
+    
     exit();
     
 });
 
 add_action('wp_ajax_set_credentials',function(){
-    print_r($_POST);
+    header('Content-Type:application/json');
+
+    
     update_option('dsi_wc_ck',$_POST['ck']);
     update_option('dsi_wc_cs',$_POST['cs']);
+    echo json_encode(['message'=>'ok']);
     exit();
 });
 

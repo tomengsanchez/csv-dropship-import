@@ -45,7 +45,7 @@ else{
         echo "</table>";
     }
     else{
-        echo "<div class='alert-primary'>Please Select .csv file</div>";
+        echo json_encode(['message'=>'<h4>Please Select .csv file</h4>']);
     }
 }
 
