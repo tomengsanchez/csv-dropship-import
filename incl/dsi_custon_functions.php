@@ -38,4 +38,9 @@ function conv_string_to_meta($string){
     return "_" . $format;
 }
 
+
+function json_message($m){
+    echo json_encode(['message'=>$m]);
+}
+
 ?>

@@ -87,7 +87,6 @@
         <ol>
             <li><p>Add Key the WooCommerce Rest API in the Advanced Settings of WooCommerce  <a href="<?php _e(home_url())?>/wp-admin/admin.php?page=wc-settings&tab=advanced&section=keys" target='_BLANK'>Click This link</a>.</li>
             <li>Copy and Paste the Consumer Key and Consumer Secret</li>
-            
         </ol>
         <img  src="<?php echo plugins_url('csv-dropship-import/assets/img/dsi_wc_api_ss.png')?>" alt="" height='400px'>
     </div>

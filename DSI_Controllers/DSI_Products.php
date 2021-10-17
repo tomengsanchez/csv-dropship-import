@@ -303,26 +303,26 @@ class DSI_Products extends DSI_Loader{
             $in = $i-1;
             //echo $data_per_lines[$i][23];echo "<br>";
             $imgs =array();
-            if($data_per_lines[$in][23]){
-                array_push($imgs,
-                    ['src' => $data_per_lines[$in][23]]
-                );
-            }
-            if($data_per_lines[$in][24]){
-                array_push($imgs,
-                    ['src' => $data_per_lines[$in][24]]
-                );
-            }
-            if($data_per_lines[$in][25]){
-                array_push($imgs,
-                    ['src' => $data_per_lines[$in][25]]
-                );
-            }
-            if($data_per_lines[$in][26]){
-                array_push($imgs,
-                    ['src' => $data_per_lines[$in][26]]
-                );
-            }
+            // if($data_per_lines[$in][23]){
+            //     array_push($imgs,
+            //         ['src' => $data_per_lines[$in][23]]
+            //     );
+            // }
+            // if($data_per_lines[$in][24]){
+            //     array_push($imgs,
+            //         ['src' => $data_per_lines[$in][24]]
+            //     );
+            // }
+            // if($data_per_lines[$in][25]){
+            //     array_push($imgs,
+            //         ['src' => $data_per_lines[$in][25]]
+            //     );
+            // }
+            // if($data_per_lines[$in][26]){
+            //     array_push($imgs,
+            //         ['src' => $data_per_lines[$in][26]]
+            //     );
+            // }
 
             $data = [
                 'name' => $data_per_lines[$in][10],
@@ -377,5 +377,167 @@ class DSI_Products extends DSI_Loader{
         $this->wc_api = $woocommerce;
         
     }
+    
+    /** 
+     * This will insert product via WC_Product_Simple
+     * 
+     * @param array @data_per_lines
+     */
+
+
+    public function dsi_wc_product_simple($prod){
+        //ar_to_pre($prod);
+        
+
+        // CREATE PRODUCTS
+        $objProduct = new WC_Product_Simple();
+        $objProduct->set_name($prod['name']);
+        $objProduct->set_status('publish');
+        $objProduct->set_sku($prod['sku']);
+        $objProduct->set_description($prod['description']);
+        //$objProduct->set_image_id($prod);
+
+        
+        // GET PRODUCT ID
+        //$prod_id = $objProduct->save();
+
+        
+
+
+        // SET THUMBNAIL TO POST
+        
+        // Add Featured Image to Post
+
+        
+        
+        $image_url        = $prod['thumbnail']; // Define the image URL here
+        $image_name       = '1-wp-header-logo.png';
+        $upload_dir       = wp_upload_dir(); // Set upload folder
+        $image_data       = file_get_contents($image_url); // Get image data
+        $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
+        $filename         = basename( $unique_file_name ); // Create image file name
+
+        // Check folder permission and define file location
+        if( wp_mkdir_p( $upload_dir['path'] ) ) {
+            $file = $upload_dir['path'] . '/' . $filename;
+        } else {
+            $file = $upload_dir['basedir'] . '/' . $filename;
+        }
+
+        // Create the image  file on the server
+        file_put_contents( $file, $image_data );
+
+        // Check image file type
+        $wp_filetype = wp_check_filetype( $filename, null );
+
+        // Set attachment data
+        $attachment = array(
+            'post_mime_type' => $wp_filetype['type'],
+            'post_title'     => sanitize_file_name( $filename ),
+            'post_content'   => '',
+            'post_status'    => 'inherit'
+        );
+
+        // Create the attachment
+        $attach_id = wp_insert_attachment( $attachment, $file);
+
+        // Include image.php
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+        // Define attachment metadata
+        $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+
+        // Assign metadata to attachment
+        wp_update_attachment_metadata( $attach_id, $attach_data );
+
+        // And finally assign featured image to post
+        
+        $objProduct->set_image_id($attach_id);
+        //set_post_thumbnail( $post_id, $attach_id );
+
+
+
+        //Image 2
+        if(isset($prod['thumbnail2'])){
+
+            $image_url        = $prod['thumbnail2']; // Define the image URL here
+            $image_name       = '1-wp-header-logo.png';
+            $upload_dir       = wp_upload_dir(); // Set upload folder
+            $image_data       = file_get_contents($image_url); // Get image data
+            $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
+            $filename         = basename( $unique_file_name ); // Create image file name
+
+            // Check folder permission and define file location
+            if( wp_mkdir_p( $upload_dir['path'] ) ) {
+                $file = $upload_dir['path'] . '/' . $filename;
+            } else {
+                $file = $upload_dir['basedir'] . '/' . $filename;
+            }
+
+            // Create the image  file on the server
+            file_put_contents( $file, $image_data );
+
+            // Check image file type
+            $wp_filetype = wp_check_filetype( $filename, null );
+
+            // Set attachment data
+            $attachment = array(
+                'post_mime_type' => $wp_filetype['type'],
+                'post_title'     => sanitize_file_name( $filename ),
+                'post_content'   => '',
+                'post_status'    => 'inherit'
+            );
+
+            // Create the attachment
+            $attach_id = wp_insert_attachment( $attachment, $file);
+
+            // Include image.php
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+            // Define attachment metadata
+            $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+
+            // Assign metadata to attachment
+            wp_update_attachment_metadata( $attach_id, $attach_data );
+
+            // And finally assign featured image to post
+            
+            //set_post_thumbnail( $post_id, $attach_id );
+            $objProduct->set_gallery_image_ids([$attach_id]);
+        }
+        // save
+        $objProduct->save();
+        echo "Good";
+
+        
+    }
+
+
+    /** 
+     * This will insert product via WC_Product_Simple_bulk
+     * 
+     * @param array @data_per_lines
+     */
+
+
+    public function dsi_wc_product_simple_bulk_create(){
+        //ar_to_pre($this->final_values_to_import);
+        $lines = $this->data_per_lines;
+        for($l = 1; $l < count($lines); $l++){
+            $this->dsi_wc_product_simple(
+                [
+                    'name'=>$lines[$l-1][10],
+                    'sku'=>$lines[$l-1][1],
+                    'thumbnail'=>$lines[$l-1][23],
+                    'thumbnail2'=>$lines[$l-1][24],
+                    'description'=>$lines[$l-1][16]
+                ]
+            );  
+        }
+        
+        
+        //ar_to_pre($objProduct);
+    }
+    
 }
 ?>

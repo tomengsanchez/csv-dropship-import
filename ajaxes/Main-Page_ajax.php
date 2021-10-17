@@ -46,6 +46,7 @@ else{
     }
     else{
         echo json_encode(['message'=>'<h4>Please Select .csv file</h4>']);
+        
     }
 }
 
@@ -66,10 +67,11 @@ function uploadcsv_files_test(){
         if($_FILES['csv_file'] && in_array($_FILES['csv_file']['type'],$mimesCSV)){
             $csv_file = $_FILES['csv_file']['tmp_name'];
             $wc_fields = array();
-            test_import($csv_file,$wc_fields);
+            //test_import($csv_file,$wc_fields);
+            csv_get_and_send($csv_file,$wc_fields);
         }
         else{
-            echo "<div class='alert-primary'>Please Select .csv file</div>";
+            echo json_encode(['message'=>'<h4>Please Select .csv file</h4>']);
         }
     }
     
@@ -84,10 +86,8 @@ function test_import($csv_file,$wc_fields){
     $head = fgetcsv($fo,10000,','); // Read The Heading
     $prd->set_meta_to_import();
     $sample_data = array(
-        array('name','_unit_name'),
-        array('description','_webpage_description_html'),
-        array('post_status','_status'),
-        array('post_type,','post_type'),
+        array('name','10'),
+        array('description','16'),
         array('product_type','_product_type'),
         array('visibility','_status'),
         array('total_sales','_total_sales'),
@@ -116,7 +116,7 @@ function test_import($csv_file,$wc_fields){
 
     
     $line = fgets($fo);
-    echo $line;
+    //echo $line;
     
     $column_assign = $prd->ds_assign_column($sample_data,$head);
     //print_r($column_assign);
@@ -124,11 +124,66 @@ function test_import($csv_file,$wc_fields){
     //$prd->import_csv_to_wc($column_assign,$prd->data_per_lines);//
     
     //$prd->dsi_create_products_rest_aw_dropship($prd->data_per_lines);
-    $prd->dsi_create_products_rest_aw_dropship($prd->data_per_lines);
+    //$prd->dsi_create_products_rest_aw_dropship($prd->data_per_lines);
     
+    //ar_to_pre($column_assign);
+    $objProduct = new WC_Product_Simple();
+
+    
+//    json_message($prd->data_per_lines);//
+    $prd->dsi_wc_product_simple_bulk_create();
+
+}
+
+//STEPS
+
+
+function csv_get_and_send($csv_file,$wc_fields){
+    header("Content-Type:application/json");
+    // READ CSV
+    $prd = new DSI_Products();
+    $csv = $_FILES['csv_file']['tmp_name'];// File NAme
+    $fo = fopen($csv,'r');// Open the File
+    $head = fgetcsv($fo,10000,','); // Read The Heading
+    $line = fgets($fo);
+
+    $prd->read_csv_lines($fo);
+
+    $sample_data = array(
+        array('name','10'),
+        array('description','16'),
+        array('sku','1'),
+        array('description','16'),
+        array('price','6'),
+        array('weight','12'),
+        array('length','16'),
+        array('width','16'),
+        array('height','16'),
+        array('stoc_quantity','16'),
+        array('tarrif_code','19'),
+    );
+    //ar_to_pre($head);
+    $upload_mapping = array();
+    for($x = 1; $x <= count($sample_data) ; $x++){
+        $upload_mapping[$sample_data[$x-1][0]] = $head[$sample_data[$x-1][1]] . "-". $sample_data[$x-1][1];   
+
+    }
+    echo json_encode([
+            'row'=>$upload_mapping
+            ]
+        );
+    
+
     
     
     
 }
+// DISPLAY CSV ON THE FRONT END
+
+//Collect Data Values
+
+//use  DSI_Product->dsi_wc_product_simple()
+
+
 
 ?>
