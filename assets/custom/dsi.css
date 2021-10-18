@@ -3,6 +3,13 @@
     padding:10px
 }
 
+.dsi-row{
+  display: grid;
+  grid-template-columns: 670px 400px;
+}
+.dsi-col{
+  
+}
 .span_parser_alert{
     border:1px solid red;
 }
@@ -11,27 +18,31 @@
     height:100px;
     width:100px;
 }
+#start_import{
+   margin:10px 0px 0px 520px;
+}
 /* default styling. Nothing to do with freexing first row and column */
 .dsi-main {display: flex;}
 .dsi-main > * {border: 1px solid;}
 .dsi-table {border-collapse: collapse; font-family: helvetica;
-    margin:20px;
+    margin:5px 20px 20px 20px;
 }
-.dsi-td, .dsi-th {border:  1px solid;
+.dsi-table tbody td, .dsi-table thead th {border:  1px solid;
       padding: 10px;
-      min-width: 200px;
+      min-width: 120px;
       background: white;
       box-sizing: border-box;
       text-align: left;
+      word-wrap: break-word;
 }
 .table-container {
   position: relative;
   max-height:  300px;
-  width: 500px;
+  width: auto;
   overflow: scroll;
 }
 
-.dsi-thead th {
+.dsi-table thead th {
   position: -webkit-sticky;
   position: sticky;
   top: 0;

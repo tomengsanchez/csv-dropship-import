@@ -36,7 +36,8 @@ jQuery(document).ready(function(){
     //jQuery('.upload_control_group').controlgroup();
     jQuery('#csv_file_submit').click(function(e){
         e.preventDefault();
-        jQuery('#csv_ajax_table').html('<img class="loading-small" src="' + locsData.home_url + '/wp-content/plugins/csv-dropship-import/assets/img/loading.png")">');
+        // jQuery('#csv_ajax_table').html('<img class="loading-small" src="' + locsData.home_url + '/wp-content/plugins/csv-dropship-import/assets/img/loading.png")">');
+        jQuery('#csv_ajax_table').html('Please Wait');
         var file_data = jQuery("#csv_file")[0].files[0]; //Get the File Input
         var form_data = new FormData(); // prepare form ddata
         form_data.append("csv_file",file_data); // Collect Form Data from the Inputs
@@ -62,9 +63,16 @@ jQuery(document).ready(function(){
                 //     jQuery('#csv_ajax_table').html(span_parser_alert(res.message));
             }   
         });
+        
     });
     
-});
+    jQuery('#start_import').click(function(e){
+        e.preventDefault();
+        table_div = jQuery('#csv_ajax_table').html();
+        jQuery('.test').html(table_div);
+
+    });
+});// ready
 //json Parse to HTML
 function span_parser_alert(jsonData){
     return "<span class='span_parser_alert'>" + jsonData+ "</span>";

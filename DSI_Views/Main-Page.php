@@ -54,6 +54,7 @@
         
     }
 ?>
+
 <fieldset <?php echo $fieldsetclass;?>>
     <form method='post'action="" class="" enctype='multipart/form-data'>
         <table class="table">
@@ -70,10 +71,11 @@
                     <label for="csv_file">Select CSV File</label>
                 </td>
                 <td>
-                    <input type='file' name='csv_file' id='csv_file'>
+                    <input type='file' name='csv_file' id='csv_file''>
                 </td>
-                <td><input type='submit' id='csv_file_submit' value='Upload' accept='csv'>
-                <button id='delete_all_p'>Delete All</button>
+                <td><input type='submit' id='csv_file_submit' value='Upload' accept='csv' class='button' >
+                
+                <button id='delete_all_p' class='button'>Delete All</button>
                     <div id='delete_ajxdiv'>
 
                     </div>
@@ -83,11 +85,15 @@
 </fieldset>
 
 <hr>
-
-<div class='container' >
-    <div class='csv-import-table-div' id='csv_ajax_table'>
-
+<div class='dsi-row'>
+    <div class="dsi-col">
+        <div class='csv-import-table-div' id='csv_ajax_table'></div>
+    </div>
+    <div class="dsi-col">
+        <div class="import-result" style='padding:50px 20px 20px 20px'>
+            
+        </div>
     </div>
 </div>
 
- 
+ <?php ?>

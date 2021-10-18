@@ -156,20 +156,35 @@ function csv_get_and_send($csv_file,$wc_fields){
         array('description','16'),
         array('price','6'),
         array('weight','12'),
-        array('length','16'),
-        array('width','16'),
-        array('height','16'),
-        array('stoc_quantity','16'),
+        array('length','14'),
+        array('width','14'),
+        array('height','14'),
+        array('stoc_quantity',''),
         array('tarrif_code','19'),
+        array('image_1','23'),
+        array('image_2','24')
     );
-    //ar_to_pre($head);
+    
+    
+    $script = "jQuery('#start_import').click(function(e){
+        e.preventDefault();
+        read_rows_from_table(jQuery(this).siblings('table'));
+    }).addClass('button');";
+
     $upload_mapping = array();
     for($x = 1; $x <= count($sample_data) ; $x++){
-        $upload_mapping[$sample_data[$x-1][0]] = $head[$sample_data[$x-1][1]] . "-". $sample_data[$x-1][1];   
+        $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
+        $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
+        if (strlen($sample_csv) >= 50)
+        $sample_csv= substr($sample_csv, 0, 40); //This is a ...script
+        else
+        $sample_csv = $sample_csv;
 
+        $upload_mapping[$sample_data[$x-1][0]] = $head[$sample_data[$x-1][1]] . "wci_split". $sample_data[$x-1][1] . "wci_split". $sample_csv . "wci_split". $csv_value;   
     }
     echo json_encode([
-            'row'=>$upload_mapping
+            'row'=>$upload_mapping,
+            'script'=> $script
             ]
         );
     
