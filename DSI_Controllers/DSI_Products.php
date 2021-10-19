@@ -116,6 +116,8 @@ class DSI_Products extends DSI_Loader{
             $lines = fgetcsv($file);
             array_push($this->data_per_lines,$lines);
         }
+
+        //return $this->data_per_lines;
     }
     /**
      * Import CSV to Woocommerce Products
@@ -392,6 +394,7 @@ class DSI_Products extends DSI_Loader{
         // CREATE PRODUCTS
         $objProduct = new WC_Product_Simple();
         $objProduct->set_name($prod['name']);
+        $objProduct->set_price($prod['price']);
         $objProduct->set_status('publish');
         $objProduct->set_sku($prod['sku']);
         $objProduct->set_description($prod['description']);
@@ -506,8 +509,10 @@ class DSI_Products extends DSI_Loader{
             $objProduct->set_gallery_image_ids([$attach_id]);
         }
         // save
-        $objProduct->save();
-        echo "Good";
+        return $objProduct->save();
+       
+       
+        //echo "Good";
 
         
     }
@@ -523,6 +528,7 @@ class DSI_Products extends DSI_Loader{
     public function dsi_wc_product_simple_bulk_create(){
         //ar_to_pre($this->final_values_to_import);
         $lines = $this->data_per_lines;
+        //ar_to_pre($lines);
         for($l = 1; $l < count($lines); $l++){
             $this->dsi_wc_product_simple(
                 [

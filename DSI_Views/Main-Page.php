@@ -89,9 +89,18 @@
     <div class="dsi-col">
         <div class='csv-import-table-div' id='csv_ajax_table'></div>
     </div>
-    <div class="dsi-col">
+    <div class="dsi-col" style='min-height:400px'>
         <div class="import-result" style='padding:50px 20px 20px 20px'>
-            
+            <table class='dsi-table'   id='dsi-summary-table' style='width:500px'>
+                <tr class='first-tr'>
+                    <th>Sku</th>
+                    <th>Product Name</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                </tr>
+                <tbody>
+                
+            </table>      
         </div>
     </div>
 </div>

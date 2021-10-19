@@ -67,7 +67,7 @@ function uploadcsv_files_test(){
         if($_FILES['csv_file'] && in_array($_FILES['csv_file']['type'],$mimesCSV)){
             $csv_file = $_FILES['csv_file']['tmp_name'];
             $wc_fields = array();
-            //test_import($csv_file,$wc_fields);
+            // test_import($csv_file,$wc_fields);
             csv_get_and_send($csv_file,$wc_fields);
         }
         else{
@@ -109,28 +109,10 @@ function test_import($csv_file,$wc_fields){
         array('stock','_stock')
     );
 
-    $lines_of_values = array();
-    
     $prd->read_csv_lines($fo);// read the file
-    //echo $line;
-
     
-    $line = fgets($fo);
-    //echo $line;
-    
-    $column_assign = $prd->ds_assign_column($sample_data,$head);
-    //print_r($column_assign);
-
-    //$prd->import_csv_to_wc($column_assign,$prd->data_per_lines);//
-    
-    //$prd->dsi_create_products_rest_aw_dropship($prd->data_per_lines);
-    //$prd->dsi_create_products_rest_aw_dropship($prd->data_per_lines);
-    
-    //ar_to_pre($column_assign);
     $objProduct = new WC_Product_Simple();
 
-    
-//    json_message($prd->data_per_lines);//
     $prd->dsi_wc_product_simple_bulk_create();
 
 }
@@ -145,10 +127,7 @@ function csv_get_and_send($csv_file,$wc_fields){
     $csv = $_FILES['csv_file']['tmp_name'];// File NAme
     $fo = fopen($csv,'r');// Open the File
     $head = fgetcsv($fo,10000,','); // Read The Heading
-    $line = fgets($fo);
-
-    $prd->read_csv_lines($fo);
-
+    $prd->set_meta_to_import();
     $sample_data = array(
         array('name','10'),
         array('description','16'),
@@ -169,9 +148,21 @@ function csv_get_and_send($csv_file,$wc_fields){
     $script = "jQuery('#start_import').click(function(e){
         e.preventDefault();
         read_rows_from_table(jQuery(this).siblings('table'));
-    }).addClass('button');";
+    }).addClass('button').animate('1000');";
+    $objProduct = new WC_Product_Simple();
+     
+    /** Collected */
+    $prd->read_csv_lines($fo);
+    $lns = $prd->data_per_lines;
 
-    $upload_mapping = array();
+    $data_lines = array();
+    for($l = 1; $l < count($lns) ; $l++){
+        array_push($data_lines,$lns[$l-1]);
+    }
+    
+    
+    //ar_to_pre($data_lines);   
+    $upload_mapping = array();  
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
         $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
@@ -182,16 +173,13 @@ function csv_get_and_send($csv_file,$wc_fields){
 
         $upload_mapping[$sample_data[$x-1][0]] = $head[$sample_data[$x-1][1]] . "wci_split". $sample_data[$x-1][1] . "wci_split". $sample_csv . "wci_split". $csv_value;   
     }
+
     echo json_encode([
             'row'=>$upload_mapping,
-            'script'=> $script
+            'script'=> $script,
+            'data_per_lines'=> $data_lines
             ]
         );
-    
-
-    
-    
-    
 }
 // DISPLAY CSV ON THE FRONT END
 
@@ -200,5 +188,40 @@ function csv_get_and_send($csv_file,$wc_fields){
 //use  DSI_Product->dsi_wc_product_simple()
 
 
+/** Receives field names,values, and columns one by one
+ * 
+ */
 
+add_action('wp_ajax_get_field_then_import','get_field_then_import');
+/** Receives field names,values, and columns one by one
+ * 
+ */
+
+function get_field_then_import(){
+    header('Content-Type:application/json');
+    
+    $prd = new DSI_Products();
+    $pid = $prd->dsi_wc_product_simple(
+        [
+            'name'=>$_POST['lines'][10],
+            'sku'=>$_POST['lines'][1],
+            'price'=>$_POST['lines'][6],
+            'thumbnail'=>$_POST['lines'][23],
+            'thumbnail2'=>$_POST['lines'][24],
+            'description'=>$_POST['lines'][16]
+        ]
+    );
+    $status_message = 'Ok';
+    
+    echo json_encode([
+        'data'=>[
+            'product_id'=> $pid,
+            'sku'=> $_POST['lines'][1],
+            'name'=> $_POST['lines'][10],
+            'price'=> $_POST['lines'][6]
+        ],
+        'status_message'=>$status_message
+    ]);
+    exit();
+}
 ?>

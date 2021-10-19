@@ -5,7 +5,9 @@ jQuery(document).ready(function(){
 
 }
 );
+var data_per_lines = Array()
  function inline_form_table_json(data,container){
+    data_per_lines = data.data_per_lines;
     var output= json_script_p(data.script);
     output += '<button id="start_import" class"button">Start Import</button>';
     output += '<table class="dsi-table" id="#csv-field">';
@@ -20,8 +22,8 @@ jQuery(document).ready(function(){
         //output += r + '->' + data.row[r] + "<br>";
         output += '<tr >';
         output += '<td class="product-field" field-name="'+ r +'"><b>' + r + '</b></td>';
-        output += '<td class="product-values wrap" csv-row-number="'+ data.row[r].split('wci_split')[1] + '">' + data.row[r].split('wci_split')[0]+ '['+ data.row[r].split('wci_split')[1]+ ']</td>';
-        output += '<td class="product-values wrap" csv-row-number="'+ data.row[r].split('wci_split')[3] + '">' + data.row[r].split('wci_split')[2]+ '</td>';
+        output += '<td class="product-col wrap" csv-row-numbers="'+ data.row[r].split('wci_split')[1] + '">' + data.row[r].split('wci_split')[0]+ '['+ data.row[r].split('wci_split')[1]+ ']</td>';
+        output += '<td class="product-values wrap" csv-row-values="'+ data.row[r].split('wci_split')[3] + '">' + data.row[r].split('wci_split')[2]+ '</td>';
         output += '</tr>';
     }
     output += '</tbody>';
@@ -33,15 +35,29 @@ function json_script_p(json){
     return '<script>'+ json +'</script>';
 }
 
+
+field_names =Array();
+field_values = Array();
+csv_columns = Array();
+/**
+ * Read Rows From TAble
+ * @param {x} x 
+ */
 function read_rows_from_table(x){
     //get Table data
     var tbodyElement = x.children('tbody');
     var tr = tbodyElement.children('tr');
-    tr.children('td').each(function(){
-
-        alert(jQuery(this).html());
-
+    
+    tr.children('td.product-field').each(function(){
+        field_names.push(jQuery(this).attr('field-name'));
+        field_values.push(jQuery(this).siblings('td.product-values').attr('csv-row-values'));
+        csv_columns.push(jQuery(this).siblings('td.product-col').attr('csv-row-numbers'));
     });
+
+    sends_data_to_ajax(data_per_lines);
+    
+    //jQuery.fn.alwayspogi('yesyes');
+
     /** task for tomorrow, 
      * design table first
      * make class for each td of everyrows. 
@@ -55,3 +71,89 @@ function read_rows_from_table(x){
 
     
 }
+const ctr =1;
+function sends_data_to_ajax(){
+    jQuery('#dsi-summary-table').append("<tr class='tr-please-wait'><td colspan='4'><h3>Please Wait...</h3></td></tr>");
+    console.log(data_per_lines.length);
+    var b =1;
+    
+    for(x = 0; x < data_per_lines.length ;x++){
+        
+        // console.log(data_per_lines[x]);
+        aj = jQuery.ajax({
+            url:locsData.admin_url+'admin-ajax.php?action=get_field_then_import',
+            type:'POST',
+            data : {
+                lines : data_per_lines[x],
+                names : field_names,
+                values : field_values,
+                csv_columns : csv_columns
+            },
+            beforeSend :function(){
+                //alert(1);
+                
+            }
+            
+        }).done(function(){
+            
+        }).always(function(e,stat){
+            trout= '';
+            //console.log(stat);        
+            
+            if(stat=='success'){
+
+                // trout+='<tr>';
+                // trout+='<td>' + e.data.sku + "</td>";
+                // trout+='<td>' + e.data.name + "</td>";
+                // trout+='<td>' + e.data.price + "</td>";
+                // trout+='<td>' + e.status_message + "</td>";
+                // trout+='</tr>';
+                jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>" + e.status_message + "</td></tr>");
+                jQuery('.tr-please-wait').remove();
+                //ctr = ctr+ 1;
+                b++;
+            }else{
+                
+            }
+            trout= '';
+            
+        });
+        console.log(aj);
+    }
+    
+
+
+    // jQuery(data_per_lines).each(function(){
+    //     trout= '';
+    //     jQuery.ajax({
+    //         url:locsData.admin_url+'admin-ajax.php?action=get_field_then_import',
+    //         type:'POST',
+    //         data : {
+    //             lines : this,
+    //             names : field_names,
+    //             values : field_values,
+    //             csv_columns : csv_columns
+    //         }
+            
+    //     }).done(function(e,stat){
+    //         console.log(stat);        
+    //         if(stat=='success'){
+    //             trout+='<tr>';
+    //             trout+='<td>' + e.data.sku + "</td>";
+    //             trout+='<td>' + e.data.name + "</td>";
+    //             trout+='<td>' + e.data.price + "</td>";
+    //             trout+='<td>' + e.status_message + "</td>";
+    //             trout+='</tr>';
+    //             jQuery('#dsi-summary-table tbody').append(trout);
+    //             ctr = ctr+ 1;
+    //         }
+            
+            
+    //     });
+        
+    // });
+
+    //console.log(ctr);
+    
+}
+
