@@ -89,5 +89,10 @@
   /* box-shadow: inset 0px 1px black; */
 }
 
-
+.read_files{
+  color:darkgreen
+}
+.imported_files{
+  color:lightseagreen
+}
 

@@ -90,7 +90,14 @@
         <div class='csv-import-table-div' id='csv_ajax_table'></div>
     </div>
     <div class="dsi-col" style='min-height:400px'>
+
         <div class="import-result" style='padding:50px 20px 20px 20px'>
+            <table >
+                <tr>
+                    <td ><h3><b>Progress : </b></h3></td>
+                    <td ><h3><span class='import_files'>0</span> of <span class='read_files'>0</span > are imported</h3></td>
+                </tr>
+            </table>
             <table class='dsi-table'   id='dsi-summary-table' style='width:500px'>
                 <tr class='first-tr'>
                     <th>Sku</th>

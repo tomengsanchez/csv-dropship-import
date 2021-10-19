@@ -74,7 +74,7 @@ function read_rows_from_table(x){
 const ctr =1;
 function sends_data_to_ajax(){
     jQuery('#dsi-summary-table').append("<tr class='tr-please-wait'><td colspan='4'><h3>Please Wait...</h3></td></tr>");
-    console.log(data_per_lines.length);
+    jQuery('.read_files').html(data_per_lines.length);
     var b =1;
     
     for(x = 0; x < data_per_lines.length ;x++){
@@ -88,6 +88,7 @@ function sends_data_to_ajax(){
                 names : field_names,
                 values : field_values,
                 csv_columns : csv_columns
+                
             },
             beforeSend :function(){
                 //alert(1);
@@ -101,7 +102,9 @@ function sends_data_to_ajax(){
             //console.log(stat);        
             
             if(stat=='success'){
-
+                var imported_files = 0;
+                imported_files = jQuery('.import_files').html();
+                jQuery('.import_files').html((imported_files*1)+ 1);
                 // trout+='<tr>';
                 // trout+='<td>' + e.data.sku + "</td>";
                 // trout+='<td>' + e.data.name + "</td>";

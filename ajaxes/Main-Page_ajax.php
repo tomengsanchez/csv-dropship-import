@@ -220,7 +220,7 @@ function get_field_then_import(){
             'name'=> $_POST['lines'][10],
             'price'=> $_POST['lines'][6]
         ],
-        'status_message'=>$status_message
+        'status_message'=>$status_message  . "(" . $_POST['counter'] . ")"
     ]);
     exit();
 }
