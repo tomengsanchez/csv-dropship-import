@@ -5,9 +5,11 @@ jQuery(document).ready(function(){
 
 }
 );
-var data_per_lines = Array()
+var data_per_lines = Array();
+var categories = Array();
  function inline_form_table_json(data,container){
     data_per_lines = data.data_per_lines;
+    categories = data.categories;
     var output= json_script_p(data.script);
     output += '<button id="start_import" class"button">Start Import</button>';
     output += '<table class="dsi-table" id="#csv-field">';
@@ -39,6 +41,7 @@ function json_script_p(json){
 field_names =Array();
 field_values = Array();
 csv_columns = Array();
+
 /**
  * Read Rows From TAble
  * @param {x} x 
@@ -68,7 +71,9 @@ function read_rows_from_table(x){
      */
     //read tbody
     //loop tbody
-
+    jQuery('.add-row').remove();
+    jQuery('.add-row').remove();
+    jQuery('.import_files').html('0');
     
 }
 const ctr =1;
@@ -76,7 +81,6 @@ function sends_data_to_ajax(){
     jQuery('#dsi-summary-table').append("<tr class='tr-please-wait'><td colspan='4'><h3>Please Wait...</h3></td></tr>");
     jQuery('.read_files').html(data_per_lines.length);
     var b =1;
-    
     for(x = 0; x < data_per_lines.length ;x++){
         
         // console.log(data_per_lines[x]);
@@ -87,7 +91,8 @@ function sends_data_to_ajax(){
                 lines : data_per_lines[x],
                 names : field_names,
                 values : field_values,
-                csv_columns : csv_columns
+                csv_columns : csv_columns,
+                category:categories
                 
             },
             beforeSend :function(){
@@ -103,23 +108,40 @@ function sends_data_to_ajax(){
             
             if(stat=='success'){
                 var imported_files = 0;
+                jQuery('.progress').html(('0'));
                 imported_files = jQuery('.import_files').html();
                 jQuery('.import_files').html((imported_files*1)+ 1);
+
+                
+                    $dvdn = jQuery('.read_files').html() * 1;
+                    $dvsr = jQuery('.import_files').html() * 1;
+                    $percentege = ($dvsr/$dvdn)*100;
+                    $percentege = $percentege.toFixed(0);
+                    //jQuery('.progress').html(($percentege));
+                    jQuery( "#progressbar" ).progressbar({
+                        value : $percentege * 1
+                    });
+                
+
+                
                 // trout+='<tr>';
                 // trout+='<td>' + e.data.sku + "</td>";
                 // trout+='<td>' + e.data.name + "</td>";
                 // trout+='<td>' + e.data.price + "</td>";
                 // trout+='<td>' + e.status_message + "</td>";
                 // trout+='</tr>';
-                jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>" + e.status_message + "</td></tr>");
+                jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td class='res' status='" + e.status_message +"'>" + e.status_message + "</td></tr>");
                 jQuery('.tr-please-wait').remove();
+                
                 //ctr = ctr+ 1;
                 b++;
             }else{
-                
+                jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>ERROR</td></tr>");
             }
             trout= '';
             
+        }).fail(function(e){
+            jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>ERROR</td></tr>");
         });
         console.log(aj);
     }

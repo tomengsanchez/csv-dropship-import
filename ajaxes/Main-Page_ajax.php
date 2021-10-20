@@ -162,10 +162,13 @@ function csv_get_and_send($csv_file,$wc_fields){
     
     
     //ar_to_pre($data_lines);   
+    $cats= array();
     $upload_mapping = array();  
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
         $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
+        
+
         if (strlen($sample_csv) >= 50)
         $sample_csv= substr($sample_csv, 0, 40); //This is a ...script
         else
@@ -173,11 +176,16 @@ function csv_get_and_send($csv_file,$wc_fields){
 
         $upload_mapping[$sample_data[$x-1][0]] = $head[$sample_data[$x-1][1]] . "wci_split". $sample_data[$x-1][1] . "wci_split". $sample_csv . "wci_split". $csv_value;   
     }
-
+    //get Categories
+    for($c = 1; $c < count($prd->data_per_lines); $c++){
+        array_push($cats,$prd->data_per_lines[$c-1][3]);
+    }
+    $cats = array_unique($cats);
     echo json_encode([
             'row'=>$upload_mapping,
             'script'=> $script,
-            'data_per_lines'=> $data_lines
+            'data_per_lines'=> $data_lines,
+            'categories'=>$cats
             ]
         );
 }
@@ -199,29 +207,98 @@ add_action('wp_ajax_get_field_then_import','get_field_then_import');
 
 function get_field_then_import(){
     header('Content-Type:application/json');
+
+    //instatiate WC_PRODUCTs
+    $prod_inst = new WC_Product();
     
+    $dim = $_POST['lines'][14];
+    $dim = trim($dim,'(mm)');
+    $dim = explode('x',$dim);
+    $lnt = $dim[0];
+    $wdt = $dim[1];
+    $sku = $_POST['lines'][1];
+
     $prd = new DSI_Products();
-    $pid = $prd->dsi_wc_product_simple(
-        [
-            'name'=>$_POST['lines'][10],
-            'sku'=>$_POST['lines'][1],
-            'price'=>$_POST['lines'][6],
-            'thumbnail'=>$_POST['lines'][23],
-            'thumbnail2'=>$_POST['lines'][24],
-            'description'=>$_POST['lines'][16]
-        ]
-    );
-    $status_message = 'Ok';
     
-    echo json_encode([
-        'data'=>[
-            'product_id'=> $pid,
-            'sku'=> $_POST['lines'][1],
-            'name'=> $_POST['lines'][10],
-            'price'=> $_POST['lines'][6]
-        ],
-        'status_message'=>$status_message  . "(" . $_POST['counter'] . ")"
-    ]);
+    $update_id = '';
+    $products = wc_get_products( array(
+        'sku'=>$sku
+    ) );
+    $existing = 0;
+    foreach($products as $p){
+        $update_id = $p->get_id();
+        $existing = 1;
+    }
+    $status_message = '';
+
+    if($existing == 1){ // IF SKU IS 
+        // $r = $prd->dsi_wc_product_simple_update([
+        //     'id'=> $update_id,
+        //     'name'=>$_POST['lines'][10],
+        //     'sku'=>$sku,
+        //     'price'=>$_POST['lines'][6],
+        //     'thumbnail'=>$_POST['lines'][23],
+        //     'thumbnail2'=>$_POST['lines'][24],
+        //     'description'=>$_POST['lines'][16],
+        //     'length'=>$lnt,
+        //     'width'=>$wdt,
+        //     'height'=>'0',
+        //     'weight'=>$_POST['lines'][12],
+
+        // ]);
+        $status_message = $r;
+
+    }
+    else{
+        // $pid = $prd->dsi_wc_product_simple(
+        //     [
+        //         'name'=>$_POST['lines'][10],
+        //         'sku'=>$sku,
+        //         'price'=>$_POST['lines'][6],
+        //         'thumbnail'=>$_POST['lines'][23],
+        //         'thumbnail2'=>$_POST['lines'][24],
+        //         'description'=>$_POST['lines'][16],
+        //         'length'=>$lnt,
+        //         'width'=>$wdt,
+        //         'height'=>'0',
+        //         'weight'=>$_POST['lines'][12],
+        //     ]
+        // );
+        $status_message = 'Created';
+    }
+
+
+
+
+    $cats = $_POST['category'];
+    $cats = array_values($cats);
+    $cat_args = array(
+        'hide_empty' => false
+    );
+    $cats = get_terms('product_cat',$cat_args);
+
+
+
+    ar_to_pre($cats);
+
+    foreach($cats as $key =>$c){
+        echo $c->name . "<br>";
+
+    }
+
+    // echo json_encode([
+    //     'data'=>[
+    //         'product_id'=> $pid,
+    //         'sku'=> $_POST['lines'][1],
+    //         'name'=> $_POST['lines'][10],
+    //         'price'=> $_POST['lines'][6],
+    //         'length'=> $dim[0],
+    //         'width'=> $dim[1],
+            
+    //     ],
+    //     'status_message'=>json_encode($cats)
+    // ]);
+
     exit();
 }
 ?>

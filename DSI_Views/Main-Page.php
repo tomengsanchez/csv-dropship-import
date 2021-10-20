@@ -7,59 +7,16 @@
 
 
 <h1 class="h1">Dropship CSV File Import</h1>
-<i>Lets you update your Woocommerce Products Using CSV</i>
+<i>Lets you create or update your WooCommerce Products using a CSV file provided by the Dropship supplier.</i>
 
 <hr>
-<?php 
-    $fieldsetclass = 'disabled';
-    if(get_option('dsi_wc_ck') == '' && get_option('dsi_wc_ck') ==''){
-        ?>
-        <div class="update-nag notice">
-            <b>WooCommerce Rest API Missing</b>
-            <p>Please set the Rest API to use Dropship Import See the Instruction Below</p>
-            <ol>
-                <li><p>Add Key the WooCommerce Rest API in the Advanced Settings of WooCommerce  <a href="<?php _e(home_url())?>/wp-admin/admin.php?page=wc-settings&tab=advanced&section=keys" target='_BLANK'>Click This link</a>.</li>
-                <li>Copy and Paste the Consumer Key and Consumer Secret Here <a href="<?php _e(home_url())?>/wp-admin/admin.php?page=dropship-import-settings#api" target='_BLANK'>Click Here</a></li>
-                <li>Refresh This Page <a href="<?php _e(home_url())?>/wp-admin/admin.php?page=dropship-import-page">Click Here</a></li>
-            </ol>
-        </div>
-        <?php    
-        // check if credentials is good
-        exit();
-    }
-    else{
-        $con = new DSI_Products();
-        $con->api_test_connect();
 
-        //$get = $con->wc_api->post('products',[]);
-        
-        //ar_to_pre($con->wc_api);
-        try{
-            $con->wc_api->get('orders');
-            $fieldsetclass = '';
-        }
-        catch( Exception $e){
-            $err = $e->getMessage();
-            if (strpos($err, 'key'))
-                echo "Consumer Key is Invalid";
 
-            if (strpos($err, 'signature'))
-                echo "Consumer Signature is Invalid"; 
-            
-            
-        }
-        //ar_to_pre($get);
-        
-       
-        
-    }
-?>
-
-<fieldset <?php echo $fieldsetclass;?>>
+<fieldset >
     <form method='post'action="" class="" enctype='multipart/form-data'>
         <table class="table">
             <tr>
-                <td><label for="dropship_company">Select Dropship Company</label></td>
+                <td><label for="dropship_company">Select Dropship Supplier</label></td>
                 <td>
                     <select name="dropship_company" id="dropship_company">
                         <option value='aw-dropship'>AW DROPSHIP</option>
@@ -71,11 +28,11 @@
                     <label for="csv_file">Select CSV File</label>
                 </td>
                 <td>
-                    <input type='file' name='csv_file' id='csv_file''>
+                    <input type='file' name='csv_file' id='csv_file'>
                 </td>
-                <td><input type='submit' id='csv_file_submit' value='Upload' accept='csv' class='button' >
+                <td>
                 
-                <button id='delete_all_p' class='button'>Delete All</button>
+                <button id='delete_all_p' class='button'>Delete All Product (Dev Purposes only)</button>
                     <div id='delete_ajxdiv'>
 
                     </div>
@@ -85,20 +42,37 @@
 </fieldset>
 
 <hr>
+    <?php 
+      
+        
+    ?>
+
 <div class='dsi-row'>
+    <input type='hidden' class='loop-counter' value='0'>
     <div class="dsi-col">
         <div class='csv-import-table-div' id='csv_ajax_table'></div>
     </div>
     <div class="dsi-col" style='min-height:400px'>
-
-        <div class="import-result" style='padding:50px 20px 20px 20px'>
-            <table >
+        <?php 
+                        
+        ?>
+        <script >
+            jQuery(document).ready(function(){
+                jQuery( "#progressbar" ).progressbar();
+            });
+            jQuery('.progress').change(function(){
+                alert(1);
+            });
+        </script>
+        <div class="import-result" >
+            <table width='600'>
                 <tr>
-                    <td ><h3><b>Progress : </b></h3></td>
-                    <td ><h3><span class='import_files'>0</span> of <span class='read_files'>0</span > are imported</h3></td>
+                    <td width='200'><h3 style='padding-left:12px'><span class='import_files'>0</span> of <span class='read_files'>0</span > are imported</h3></td>
+                    <td width='100'><h3><b>Progress : </b></h3></td>
+                    <td ><div style='width:200px' id='progressbar'></div></td>
                 </tr>
             </table>
-            <table class='dsi-table'   id='dsi-summary-table' style='width:500px'>
+            <table class=''   id='dsi-summary-table' style='width:600px;background-color:white'>
                 <tr class='first-tr'>
                     <th>Sku</th>
                     <th>Product Name</th>

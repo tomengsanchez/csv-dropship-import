@@ -34,7 +34,7 @@
 
 jQuery(document).ready(function(){
     //jQuery('.upload_control_group').controlgroup();
-    jQuery('#csv_file_submit').click(function(e){
+    jQuery('#csv_file').change(function(e){
         e.preventDefault();
         // jQuery('#csv_ajax_table').html('<img class="loading-small" src="' + locsData.home_url + '/wp-content/plugins/csv-dropship-import/assets/img/loading.png")">');
         jQuery('#csv_ajax_table').html('Please Wait');
@@ -116,6 +116,9 @@ jQuery(document).ready(function(){
                 //alert(r);
                 //jQuery('#test_product_import_ajdiv').html(r);
                 jQuery('#csv_ajax_table').html(r);
+                jQuery('.add-row').remove();
+                jQuery('.add-row').remove();
+                jQuery('.import_files').html('0');
                 
             }
         });
@@ -140,6 +143,8 @@ jQuery(document).ready(function(){
 
 jQuery(document).ready(function(){
     jQuery("#settings-tabs").tabs();
+    
+
 });
 
 
