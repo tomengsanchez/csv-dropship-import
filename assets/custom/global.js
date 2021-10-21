@@ -9,6 +9,7 @@ var data_per_lines = Array();
 var categories = Array();
  function inline_form_table_json(data,container){
     data_per_lines = data.data_per_lines;
+    jQuery('#row_holder_finish').val(data_per_lines.length);
     categories = data.categories;
     var output= json_script_p(data.script);
     output += '<button id="start_import" class"button">Start Import</button>';
@@ -92,7 +93,8 @@ function sends_data_to_ajax(){
                 names : field_names,
                 values : field_values,
                 csv_columns : csv_columns,
-                category:categories
+                category:categories,
+                row_counter: x
                 
             },
             beforeSend :function(){

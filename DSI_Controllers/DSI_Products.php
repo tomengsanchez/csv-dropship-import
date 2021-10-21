@@ -402,6 +402,7 @@ class DSI_Products extends DSI_Loader{
         $objProduct->set_width($prod['width']);
         $objProduct->set_height($prod['height']);
         $objProduct->set_weight($prod['weight']);
+        $objProduct->set_category_ids(array($prod['category']));
         //$objProduct->set_image_id($prod);
 
         
@@ -561,6 +562,8 @@ class DSI_Products extends DSI_Loader{
         $objProduct->set_width($prod['width']);
         $objProduct->set_height($prod['height']);
         $objProduct->set_weight($prod['weight']);
+        $objProduct->set_category_ids(array($prod['category']));
+
         //$objProduct->set_image_id($prod);
 
         
@@ -677,7 +680,38 @@ class DSI_Products extends DSI_Loader{
         return 'Updated';
         //echo "Good";
     }
+    /**
+     *  Manipulate Category Add and Create Existing Product
+     * 
+     */
+    function category_manipulation($cat){
+        $cat_args = array(
+            'hide_empty' => false,
+            'name'=>$cat
+        );
+        $cats_result = get_terms('product_cat',$cat_args);
+        if(count($cats_result) == 0)  {
+            wp_insert_category([
+                'taxonomy'=>'product_cat',
+                'cat_name'=>$cat
+            ]);
+            
+        }
+        else{
+            //echo "This is existing : " . $cats[$x]. "<br>"; 
+            
+        }
+        return $this->get_product_category_id($cat);
+    }
+    function get_product_category_id($cat_name){
+        $cat_args = array(
+            'hide_empty' => false,
+            'name'=>$cat_name
+        );
+        $res = get_terms('product_cat',$cat_args);
+        return $res[0]->term_id;
     
+    }
     
 }
 ?>

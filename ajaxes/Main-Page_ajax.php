@@ -230,75 +230,82 @@ function get_field_then_import(){
         $existing = 1;
     }
     $status_message = '';
+    $cats = $_POST['category'];//all cats in the file
+    
+    $category_id = $prd->category_manipulation($_POST['lines'][3]);
+    
+
+    //$category_id = get_product_category_id($_POST['lines'][3]); //cats per line
 
     if($existing == 1){ // IF SKU IS 
-        // $r = $prd->dsi_wc_product_simple_update([
-        //     'id'=> $update_id,
-        //     'name'=>$_POST['lines'][10],
-        //     'sku'=>$sku,
-        //     'price'=>$_POST['lines'][6],
-        //     'thumbnail'=>$_POST['lines'][23],
-        //     'thumbnail2'=>$_POST['lines'][24],
-        //     'description'=>$_POST['lines'][16],
-        //     'length'=>$lnt,
-        //     'width'=>$wdt,
-        //     'height'=>'0',
-        //     'weight'=>$_POST['lines'][12],
+        $r = $prd->dsi_wc_product_simple_update([
+            'id'=> $update_id,
+            'name'=>$_POST['lines'][10],
+            'sku'=>$sku,
+            'price'=>$_POST['lines'][6],
+            'thumbnail'=>$_POST['lines'][23],
+            'thumbnail2'=>$_POST['lines'][24],
+            'description'=>$_POST['lines'][16],
+            'category'=> $category_id,
+            'length'=>$lnt,
+            'width'=>$wdt,
+            'height'=>'0',
+            'weight'=>$_POST['lines'][12],
 
-        // ]);
+        ]);
         $status_message = $r;
-
     }
     else{
-        // $pid = $prd->dsi_wc_product_simple(
-        //     [
-        //         'name'=>$_POST['lines'][10],
-        //         'sku'=>$sku,
-        //         'price'=>$_POST['lines'][6],
-        //         'thumbnail'=>$_POST['lines'][23],
-        //         'thumbnail2'=>$_POST['lines'][24],
-        //         'description'=>$_POST['lines'][16],
-        //         'length'=>$lnt,
-        //         'width'=>$wdt,
-        //         'height'=>'0',
-        //         'weight'=>$_POST['lines'][12],
-        //     ]
-        // );
+        $pid = $prd->dsi_wc_product_simple(
+            [
+                'name'=>$_POST['lines'][10],
+                'sku'=>$sku,
+                'price'=>$_POST['lines'][6],
+                'thumbnail'=>$_POST['lines'][23],
+                'thumbnail2'=>$_POST['lines'][24],
+                'description'=>$_POST['lines'][16],
+                'category'=> $category_id,
+                'length'=>$lnt,
+                'width'=>$wdt,
+                'height'=>'0',
+                'weight'=>$_POST['lines'][12],
+            ]
+        );
         $status_message = 'Created';
     }
 
 
 
-
-    $cats = $_POST['category'];
-    $cats = array_values($cats);
-    $cat_args = array(
-        'hide_empty' => false
-    );
-    $cats = get_terms('product_cat',$cat_args);
+    //Category Manipulation : Add/EDIT product category on first row only
+    
+    
 
 
-
-    ar_to_pre($cats);
-
-    foreach($cats as $key =>$c){
-        echo $c->name . "<br>";
-
-    }
-
-    // echo json_encode([
-    //     'data'=>[
-    //         'product_id'=> $pid,
-    //         'sku'=> $_POST['lines'][1],
-    //         'name'=> $_POST['lines'][10],
-    //         'price'=> $_POST['lines'][6],
-    //         'length'=> $dim[0],
-    //         'width'=> $dim[1],
+    echo json_encode([
+        'data'=>[
+            'product_id'=> $pid,
+            'sku'=> $_POST['lines'][1],
+            'name'=> $_POST['lines'][10],
+            'price'=> $_POST['lines'][6],
+            'length'=> $dim[0],
+            'width'=> $dim[1],
+            'cats'=>$cats_result
             
-    //     ],
-    //     'status_message'=>json_encode($cats)
-    // ]);
+        ],
+        'status_message'=>'ok'
+    ]);
 
     exit();
+}
+
+
+function get_product_category_id($cat_name){
+    $cat_args = array(
+        'hide_empty' => false,
+        'name'=>$cat_name
+    );
+    $res = get_terms('product_cat',$cat_args);
+    return $res[0]->term_id;
+
 }
 ?>
