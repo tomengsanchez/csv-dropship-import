@@ -9,33 +9,37 @@ var data_per_lines = Array();
 var categories = Array();
  function inline_form_table_json(data,container){
     data_per_lines = data.data_per_lines;
-    jQuery('#row_holder_finish').val(data_per_lines.length);
-    categories = data.categories;
-    var output= json_script_p(data.script);
-    output += '<button id="start_import" class"button">Start Import</button>';
-    output += '<table class="dsi-table" id="#csv-field">';
-    output += '<thead class="dsi-thead">';
-    output += '<tr >';
-    output += '<th width=100px>Product Field</th>';
-    output += '<th >CSV Column[Col#]</th>';
-    output += '<th >CSV Values</th>';
-    output += '</thead>';
-    output += '<tbody class="dsi-tbody">';
-    for(var r in data.row){
-        //output += r + '->' + data.row[r] + "<br>";
+    if(data_per_lines){
+        jQuery('#row_holder_finish').val(data_per_lines.length);
+        categories = data.categories;
+        var output= json_script_p(data.script);
+        output += '<button id="start_import" class"button">Start Import</button>';
+        output += '<table class="dsi-table" id="#csv-field">';
+        output += '<thead class="dsi-thead">';
         output += '<tr >';
-        output += '<td class="product-field" field-name="'+ r +'"><b>' + r + '</b></td>';
-        output += '<td class="product-col wrap" csv-row-numbers="'+ data.row[r].split('wci_split')[1] + '">' + data.row[r].split('wci_split')[0]+ '['+ data.row[r].split('wci_split')[1]+ ']</td>';
-        output += '<td class="product-values wrap" csv-row-values="'+ data.row[r].split('wci_split')[3] + '">' + data.row[r].split('wci_split')[2]+ '</td>';
-        output += '</tr>';
+        output += '<th width=100px>Product Field</th>';
+        output += '<th >CSV Column[Col#]</th>';
+        output += '<th >CSV Values</th>';
+        output += '</thead>';
+        output += '<tbody class="dsi-tbody">';
+        for(var r in data.row){
+            //output += r + '->' + data.row[r] + "<br>";
+            output += '<tr >';
+            output += '<td class="product-field" field-name="'+ r +'"><b>' + r + '</b></td>';
+            output += '<td class="product-col wrap" csv-row-numbers="'+ data.row[r].split('wci_split')[1] + '">' + data.row[r].split('wci_split')[0]+ '['+ data.row[r].split('wci_split')[1]+ ']</td>';
+            output += '<td class="product-values wrap" csv-row-values="'+ data.row[r].split('wci_split')[3] + '">' + data.row[r].split('wci_split')[2]+ '</td>';
+            output += '</tr>';
+        }
+        output += '</tbody>';
+        output += '</table>';
+        container.html(output);
     }
-    output += '</tbody>';
-    output += '</table>';
-    container.html(output);
+    else{
+        alert('Please Choose Correct CSV File');
+    }
 }
 
-function json_script_p(json){
-    return '<script>'+ json +'</script>';
+function json_script_p(json){return '<script>'+ json +'</script>';
 }
 
 
@@ -82,71 +86,75 @@ function sends_data_to_ajax(){
     jQuery('#dsi-summary-table').append("<tr class='tr-please-wait'><td colspan='4'><h3>Please Wait...</h3></td></tr>");
     jQuery('.read_files').html(data_per_lines.length);
     var b =1;
-    for(x = 0; x < data_per_lines.length ;x++){
+    jQuery('#row_holder_start').val(0 * 1);
+    console.log(data_per_lines);
+    send_one_by_one_ajax();
+
+
+   
+    // for(x = 0; x < data_per_lines.length ;x++){
         
-        // console.log(data_per_lines[x]);
-        aj = jQuery.ajax({
-            url:locsData.admin_url+'admin-ajax.php?action=get_field_then_import',
-            type:'POST',
-            data : {
-                lines : data_per_lines[x],
-                names : field_names,
-                values : field_values,
-                csv_columns : csv_columns,
-                category:categories,
-                row_counter: x
+    //     // console.log(data_per_lines[x]);
+    //     aj = jQuery.ajax({
+    //         url:locsData.admin_url+'admin-ajax.php?action=get_field_then_import',
+    //         type:'POST',
+    //         data : {
+    //             lines : data_per_lines[x],
+    //             names : field_names,
+    //             values : field_values,
+    //             csv_columns : csv_columns,
+    //             category:categories,
+    //             row_counter: x
                 
-            },
-            beforeSend :function(){
-                //alert(1);
+    //         },
+    //         beforeSend :function(){
+    //             //alert(1);
                 
-            }
+    //         }
             
-        }).done(function(){
+    //     }).done(function(){
             
-        }).always(function(e,stat){
-            trout= '';
-            //console.log(stat);        
+    //     }).always(function(e,stat){
+    //         trout= '';
+    //         //console.log(stat);        
             
-            if(stat=='success'){
-                var imported_files = 0;
-                jQuery('.progress').html(('0'));
-                imported_files = jQuery('.import_files').html();
-                jQuery('.import_files').html((imported_files*1)+ 1);
+    //         if(stat=='success'){
+    //             var imported_files = 0;
+    //             jQuery('.progress').html(('0'));
+    //             imported_files = jQuery('.import_files').html();
+    //             jQuery('.import_files').html((imported_files*1)+ 1);
+    //                 $dvdn = jQuery('.read_files').html() * 1;
+    //                 $dvsr = jQuery('.import_files').html() * 1;
+    //                 $percentege = ($dvsr/$dvdn)*100;
+    //                 $percentege = $percentege.toFixed(0);
+    //                 //jQuery('.progress').html(($percentege));
+    //                 jQuery( "#progressbar" ).progressbar({
+    //                     value : $percentege * 1
+    //                 });
+                
 
                 
-                    $dvdn = jQuery('.read_files').html() * 1;
-                    $dvsr = jQuery('.import_files').html() * 1;
-                    $percentege = ($dvsr/$dvdn)*100;
-                    $percentege = $percentege.toFixed(0);
-                    //jQuery('.progress').html(($percentege));
-                    jQuery( "#progressbar" ).progressbar({
-                        value : $percentege * 1
-                    });
+    //             // trout+='<tr>';
+    //             // trout+='<td>' + e.data.sku + "</td>";
+    //             // trout+='<td>' + e.data.name + "</td>";
+    //             // trout+='<td>' + e.data.price + "</td>";
+    //             // trout+='<td>' + e.status_message + "</td>";
+    //             // trout+='</tr>';
+    //             jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td class='res' status='" + e.status_message +"'>" + e.status_message + "</td></tr>");
+    //             jQuery('.tr-please-wait').remove();
                 
-
-                
-                // trout+='<tr>';
-                // trout+='<td>' + e.data.sku + "</td>";
-                // trout+='<td>' + e.data.name + "</td>";
-                // trout+='<td>' + e.data.price + "</td>";
-                // trout+='<td>' + e.status_message + "</td>";
-                // trout+='</tr>';
-                jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td class='res' status='" + e.status_message +"'>" + e.status_message + "</td></tr>");
-                jQuery('.tr-please-wait').remove();
-                
-                //ctr = ctr+ 1;
-                b++;
-            }else{
-                jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>ERROR</td></tr>");
-            }
-            trout= '';
+    //             //ctr = ctr+ 1;
+    //             b++;
+    //         }else{
+    //             jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>ERROR</td></tr>");
+    //         }
+    //         trout= '';
             
-        }).fail(function(e){
-            jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>ERROR</td></tr>");
-        });
-        console.log(aj);
-    }
+    //     }).fail(function(e){
+    //         jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>ERROR</td></tr>");
+    //     });
+    //     console.log(aj);
+    // }
     
 
 
@@ -182,5 +190,64 @@ function sends_data_to_ajax(){
 
     //console.log(ctr);
     
+}
+
+function send_one_by_one_ajax(){
+    trout = '';
+    aj = jQuery.ajax({
+        url:locsData.admin_url+'admin-ajax.php?action=get_field_then_import',
+        type:'POST',
+        data : {
+            lines : data_per_lines[jQuery('#row_holder_start').val() *1],
+            names : field_names,
+            values : field_values,
+            csv_columns : csv_columns,
+            category:categories
+            
+        
+        }
+    }).always(function(e){
+        start= jQuery('#row_holder_start').val() *1;
+        finish = jQuery('#row_holder_finish').val() *1;
+        if(start >= (finish-1)){
+            //jQuery('#row_holder_start').val(0 * 1);
+        }
+        else{
+            
+            jQuery('#row_holder_start').val((jQuery('#row_holder_start').val() *1)+1); 
+            send_one_by_one_ajax();
+            var imported_files = 0;
+            
+           
+            
+        }
+        imported_files = jQuery('.import_files').html();
+        jQuery('.progress').html(('0'));
+        jQuery('.import_files').html((imported_files*1)+ 1);
+        $dvdn = jQuery('.read_files').html() * 1;
+        $dvsr = jQuery('.import_files').html() * 1;
+        $percentege = ($dvsr/$dvdn)*100;
+        $percentege = $percentege.toFixed(0);
+        //jQuery('.progress').html(($percentege));
+        jQuery( "#progressbar" ).progressbar({
+            value : $percentege * 1
+        });                
+        trout+='<tr>';
+        trout+='<td>' + e.data.sku + "</td>";
+        trout+='<td>' + e.data.name + "</td>";
+        trout+='<td>' + e.data.price + "</td>";
+        trout+='<td>' + e.status_message + "</td>";
+        trout+='</tr>';
+        jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td class='res' status='" + e.status_message +"'>" + e.status_message + "</td></tr>");
+        jQuery('.tr-please-wait').remove();
+    }).fail(function(){
+        trout+='<tr>';
+        trout+='<td>' + e.data.sku + "</td>";
+        trout+='<td>' + e.data.name + "</td>";
+        trout+='<td>' + e.data.price + "</td>";
+        trout+='<td>' + e.status_message + "</td>";
+        trout+='</tr>';
+        jQuery('#dsi-summary-table').append("<tr class='add-row' colspan='4'><b>Import Error!!!</b><td></td></tr>");
+    });
 }
 

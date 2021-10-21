@@ -675,9 +675,9 @@ class DSI_Products extends DSI_Loader{
             $objProduct->set_gallery_image_ids([$attach_id]);
         }
         // save
-        $objProduct->save();
+        return $objProduct->save();
 
-        return 'Updated';
+        
         //echo "Good";
     }
     /**

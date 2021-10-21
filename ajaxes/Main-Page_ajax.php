@@ -238,7 +238,7 @@ function get_field_then_import(){
     //$category_id = get_product_category_id($_POST['lines'][3]); //cats per line
 
     if($existing == 1){ // IF SKU IS 
-        $r = $prd->dsi_wc_product_simple_update([
+        $pid = $prd->dsi_wc_product_simple_update([
             'id'=> $update_id,
             'name'=>$_POST['lines'][10],
             'sku'=>$sku,
@@ -253,7 +253,7 @@ function get_field_then_import(){
             'weight'=>$_POST['lines'][12],
 
         ]);
-        $status_message = $r;
+        $status_message = 'Updated';
     }
     else{
         $pid = $prd->dsi_wc_product_simple(
@@ -288,11 +288,10 @@ function get_field_then_import(){
             'name'=> $_POST['lines'][10],
             'price'=> $_POST['lines'][6],
             'length'=> $dim[0],
-            'width'=> $dim[1],
-            'cats'=>$cats_result
+            'width'=> $dim[1]
             
         ],
-        'status_message'=>'ok'
+        'status_message'=>$status_message
     ]);
 
     exit();

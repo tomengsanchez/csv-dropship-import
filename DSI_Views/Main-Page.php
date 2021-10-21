@@ -65,8 +65,8 @@
             });
         </script>
         <div class="import-result" >
-            <!-- <input type='text' id='row_holder_finish'>
-            <input type='text' id='row_holder_start' value='0'> -->
+            <input type='hidden' id='row_holder_finish'>
+            <input type='hidden' id='row_holder_start' value='0'>
             <table width='600'>
                 <tr>
                     <td width='200'><h3 style='padding-left:12px'><span class='import_files'>0</span> of <span class='read_files'>0</span > are imported</h3></td>
