@@ -133,7 +133,6 @@ function csv_get_and_send($csv_file,$wc_fields){
         array('description','16'),
         array('sku','1'),
         array('description','16'),
-        array('family','3'),
         array('price','6'),
         array('weight','12'),
         array('length','14'),
@@ -145,15 +144,55 @@ function csv_get_and_send($csv_file,$wc_fields){
         array('image_2','24'),
         array('category','31'),
         array('category1','32'),
+        array('family','3'),
     );
     
     
     $script = "jQuery('#start_import').click(function(e){
         e.preventDefault();
         //selected_category_column = jQuery(this).parent().siblings('td.td_select').children('select.select_category_column').val();
+        mark_up_price_base = jQuery(this).parent().parent().siblings('td.price_mark_up_td').children('select.price_mark_up_select').val();
+        mark_up_price_base = jQuery(this).parent().parent().siblings().children('td.price_mark_up_td').children('select.price_mark_up_select').val();
+        mark_up_price_value = jQuery(this).parent().parent().siblings().children('td.price_mark_up_value_td').children('input#price_mark_up_text').val();
+
+        
         sel = jQuery(this).parent().siblings('td.td_select').children('select.select_category_column').val();
-        read_rows_from_table(jQuery(this).siblings('table'),sel);
-    }).addClass('button').animate('1000');";
+        if(jQuery('select.price_mark_up_select').val()=='None'){
+            read_rows_from_table(jQuery(this).siblings('table'),sel,mark_up_price_base,mark_up_price_value);    
+        }
+        else{
+            if(mark_up_price_value ==''){
+                alert('Please Input Number');
+                jQuery('input#price_mark_up_text').focus();
+            }
+            else{
+                if(validate_number(jQuery('input#price_mark_up_text'))){
+                    
+                    read_rows_from_table(jQuery(this).siblings('table'),sel,mark_up_price_base,mark_up_price_value);    
+                }
+                else{
+                    alert('Mark Up Price is not a Number');
+                    jQuery('input#price_mark_up_text').focus();
+                }
+            }
+        }
+
+        
+            
+        
+        
+        
+    }).addClass('button').animate('1000');
+    jQuery('select.price_mark_up_select').change(function(){
+        console.log(jQuery(this).val());
+        if(jQuery(this).val() == 'None'){
+            jQuery('input#price_mark_up_text').attr('disabled','disabled');
+        }
+        else{
+            jQuery('input#price_mark_up_text').removeAttr('disabled');
+        }
+    });
+    ";
     $objProduct = new WC_Product_Simple();
      
     /** Collected */
@@ -172,13 +211,8 @@ function csv_get_and_send($csv_file,$wc_fields){
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
         $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
+
         
-
-        if (strlen($sample_csv) >= 50)
-        $sample_csv= substr($sample_csv, 0, 40); //This is a ...script
-        else
-        $sample_csv = $sample_csv;
-
         $upload_mapping[$sample_data[$x-1][0]] = $head[$sample_data[$x-1][1]] . "wci_split". $sample_data[$x-1][1] . "wci_split". $sample_csv . "wci_split". $csv_value;   
     }
     //get Categories
@@ -215,7 +249,10 @@ function get_field_then_import(){
 
     //instatiate WC_PRODUCTs
     $prod_inst = new WC_Product();
-    
+    $price = $_POST['lines'][6];
+
+
+
     $dim = $_POST['lines'][14];
     $dim = trim($dim,'(mm)');
     $dim = explode('x',$dim);
@@ -235,6 +272,20 @@ function get_field_then_import(){
         $existing = 1;
     }
     $status_message = '';
+
+    //Price 
+    $percent = $_POST['mark_up_value']/100;
+    if($_POST['mark_up_base'] == 'None'){
+        $price = $price;
+    }
+    else if($_POST['mark_up_base'] == 'Price'){
+        $price = $price + $_POST['mark_up_value'];
+    }
+    else if($_POST['mark_up_base'] == 'Percentage'){
+        $price = $price + ($price * $percent);
+    }
+
+
     $cats = $_POST['category'];//all cats in the file
     $categ_col = $_POST['selected_category'];
 
@@ -248,7 +299,7 @@ function get_field_then_import(){
             'id'=> $update_id,
             'name'=>$_POST['lines'][10],
             'sku'=>$sku,
-            'price'=>$_POST['lines'][6],
+            'price'=>$price,
             'thumbnail'=>$_POST['lines'][23],
             'thumbnail2'=>$_POST['lines'][24],
             'description'=>$_POST['lines'][16],
@@ -266,7 +317,7 @@ function get_field_then_import(){
             [
                 'name'=>$_POST['lines'][10],
                 'sku'=>$sku,
-                'price'=>$_POST['lines'][6],
+                'price'=>$price,
                 'thumbnail'=>$_POST['lines'][23],
                 'thumbnail2'=>$_POST['lines'][24],
                 'description'=>$_POST['lines'][16],
@@ -283,23 +334,24 @@ function get_field_then_import(){
 
 
     //Category Manipulation : Add/EDIT product category on first row only
-    
-    
-
-
     echo json_encode([
         'data'=>[
             'product_id'=> $pid,
             'sku'=> $_POST['lines'][1],
             'name'=> $_POST['lines'][10],
-            'price'=> $_POST['lines'][6],
+            'price'=> $price,
             'category'=>$_POST['lines'][$_POST['selected_category']],
             'length'=> $dim[0],
-            'width'=> $dim[1]
-            
+            'width'=> $dim[1].
+            ''
         ],
         'status_message'=>$status_message,
-        'selected_cat' => $_POST['selected_category']
+        'selected_cat' => $_POST['selected_category'],
+        'mark_up_base' => $_POST['mark_up_base'],
+        'mark_up_value' => $_POST['mark_up_value'],
+        'mark_up_perc' => $percent,
+        'price_up'=> $price,
+
     ]);
 
     exit();

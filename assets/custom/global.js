@@ -34,8 +34,12 @@ var categories = Array();
                     
             }
         }
-
-        output += '<table><tr><td><span style="padding:0px 0px 0px 50px;">Please Select Column For Category : </span></td><td class="td_select"><select class="select select_category_column">' + opt + '</select></td><td><button id="start_import" class"button">Start Import</button></td></tr></table>';
+        output += '<table>';
+        output += '<tr><td><span style="padding:0px 0px 0px 20px;">Price Mark-Up</span></td><td class="price_mark_up_td"><select class="price_mark_up_select"><option>None</option><option>Price</option><option>Percentage</option></select></td>';
+        output += '<td class="price_mark_up_value_td"><input type="text" id="price_mark_up_text" disabled size="10"></td>';
+        output += '</tr>';
+        output += '<tr><td><span style="padding:0px 0px 0px 20px;">Select Column For Category : </span></td><td class="td_select"><select class="select select_category_column">' + opt + '</select></td>';
+        output += '<td><button id="start_import" class"button">Start Import</button></td></tr></table>';
         output += '<table class="dsi-table" id="#csv-field">';
         output += '<thead class="dsi-thead">';
         output += '<tr >';
@@ -51,7 +55,7 @@ var categories = Array();
             output += '<tr >';
             output += '<td class="product-field" field-name="'+ r +'"><b>' + r + '</b></td>';
             output += '<td class="product-col wrap" csv-row-numbers="'+ data.row[r].split('wci_split')[1] + '">' + data.row[r].split('wci_split')[0]+ '['+ data.row[r].split('wci_split')[1]+ ']</td>';
-            output += '<td class="product-values wrap" csv-row-values="'+ data.row[r].split('wci_split')[3] + '">' + data.row[r].split('wci_split')[2]+ '</td>';
+            output += '<td class="product-values wrap" csv-row-values="'+ data.row[r].split('wci_split')[3] + '">' + jQuery.trim(data.row[r].split('wci_split')[2]) + '</td>';
             output += '</tr>';
         }
         output += '</tbody>';
@@ -62,21 +66,25 @@ var categories = Array();
         jQuery('#csv_ajax_table').html('Please Select the Correct .CSV File');
     }
 }
-
-function json_script_p(json){return '<script>'+ json +'</script>';
+function json_script_p(json){
+    return '<script>'+ json +'</script>';
 }
 
 
 field_names =Array();
 field_values = Array();
 csv_columns = Array();
-
+var mark_up_base_ = '';
+var mark_up_value_ = '';
 /**
  * Read Rows From TAble
  * @param {x} x 
  */
-function read_rows_from_table(x,selected_category){
+function read_rows_from_table(x,selected_category,mark_up_base,mark_up_value){
     //get Table data
+    mark_up_base_ = mark_up_base;
+    mark_up_value_ = mark_up_value;
+
     selected_category_column = selected_category;
     
     var tbodyElement = x.children('tbody');
@@ -87,8 +95,15 @@ function read_rows_from_table(x,selected_category){
         field_values.push(jQuery(this).siblings('td.product-values').attr('csv-row-values'));
         csv_columns.push(jQuery(this).siblings('td.product-col').attr('csv-row-numbers'));
     });
-
-    sends_data_to_ajax(data_per_lines,selected_category_column);
+    /**
+     * Sends data to ajax from the collected table data and values from the server
+     * 
+     * @param array      data_per_lines values of lines per column
+     * @param string     selected_category values of the selectec category column
+     * @param string mark_base selected markup price
+     * @param numeric mark_value value of the selected mark up price
+     */
+    sends_data_to_ajax(data_per_lines,selected_category_column,mark_up_base_,mark_up_value_);
     
     //jQuery.fn.alwayspogi('yesyes');
 
@@ -116,107 +131,6 @@ function sends_data_to_ajax(){
     jQuery('#row_holder_start').val(0 * 1);
     console.log(data_per_lines);
     send_one_by_one_ajax();
-
-
-   
-    // for(x = 0; x < data_per_lines.length ;x++){
-        
-    //     // console.log(data_per_lines[x]);
-    //     aj = jQuery.ajax({
-    //         url:locsData.admin_url+'admin-ajax.php?action=get_field_then_import',
-    //         type:'POST',
-    //         data : {
-    //             lines : data_per_lines[x],
-    //             names : field_names,
-    //             values : field_values,
-    //             csv_columns : csv_columns,
-    //             category:categories,
-    //             row_counter: x
-                
-    //         },
-    //         beforeSend :function(){
-    //             //alert(1);
-                
-    //         }
-            
-    //     }).done(function(){
-            
-    //     }).always(function(e,stat){
-    //         trout= '';
-    //         //console.log(stat);        
-            
-    //         if(stat=='success'){
-    //             var imported_files = 0;
-    //             jQuery('.progress').html(('0'));
-    //             imported_files = jQuery('.import_files').html();
-    //             jQuery('.import_files').html((imported_files*1)+ 1);
-    //                 $dvdn = jQuery('.read_files').html() * 1;
-    //                 $dvsr = jQuery('.import_files').html() * 1;
-    //                 $percentege = ($dvsr/$dvdn)*100;
-    //                 $percentege = $percentege.toFixed(0);
-    //                 //jQuery('.progress').html(($percentege));
-    //                 jQuery( "#progressbar" ).progressbar({
-    //                     value : $percentege * 1
-    //                 });
-                
-
-                
-    //             // trout+='<tr>';
-    //             // trout+='<td>' + e.data.sku + "</td>";
-    //             // trout+='<td>' + e.data.name + "</td>";
-    //             // trout+='<td>' + e.data.price + "</td>";
-    //             // trout+='<td>' + e.status_message + "</td>";
-    //             // trout+='</tr>';
-    //             jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td class='res' status='" + e.status_message +"'>" + e.status_message + "</td></tr>");
-    //             jQuery('.tr-please-wait').remove();
-                
-    //             //ctr = ctr+ 1;
-    //             b++;
-    //         }else{
-    //             jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>ERROR</td></tr>");
-    //         }
-    //         trout= '';
-            
-    //     }).fail(function(e){
-    //         jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td>ERROR</td></tr>");
-    //     });
-    //     console.log(aj);
-    // }
-    
-
-
-    // jQuery(data_per_lines).each(function(){
-    //     trout= '';
-    //     jQuery.ajax({
-    //         url:locsData.admin_url+'admin-ajax.php?action=get_field_then_import',
-    //         type:'POST',
-    //         data : {
-    //             lines : this,
-    //             names : field_names,
-    //             values : field_values,
-    //             csv_columns : csv_columns
-    //         }
-            
-    //     }).done(function(e,stat){
-    //         console.log(stat);        
-    //         if(stat=='success'){
-    //             trout+='<tr>';
-    //             trout+='<td>' + e.data.sku + "</td>";
-    //             trout+='<td>' + e.data.name + "</td>";
-    //             trout+='<td>' + e.data.price + "</td>";
-    //             trout+='<td>' + e.status_message + "</td>";
-    //             trout+='</tr>';
-    //             jQuery('#dsi-summary-table tbody').append(trout);
-    //             ctr = ctr+ 1;
-    //         }
-            
-            
-    //     });
-        
-    // });
-
-    //console.log(ctr);
-    
 }
 var selected_category_column;
 function send_one_by_one_ajax(){
@@ -229,7 +143,9 @@ function send_one_by_one_ajax(){
             names : field_names,
             values : field_values,
             csv_columns : csv_columns,
-            selected_category : selected_category_column
+            selected_category : selected_category_column,
+            mark_up_base: mark_up_base_,
+            mark_up_value: mark_up_value_
             
         
         }

@@ -394,7 +394,7 @@ class DSI_Products extends DSI_Loader{
         // CREATE PRODUCTS
         $objProduct = new WC_Product_Simple();
         $objProduct->set_name($prod['name']);
-        $objProduct->set_price($prod['price']);
+        $objProduct->set_regular_price($prod['price']);
         $objProduct->set_status('publish');
         $objProduct->set_sku($prod['sku']);
         $objProduct->set_description($prod['description']);
@@ -554,7 +554,7 @@ class DSI_Products extends DSI_Loader{
 
         $objProduct = new WC_Product($prod['id']);
         $objProduct->set_name($prod['name']);
-        $objProduct->set_price($prod['price']);
+        $objProduct->set_regular_price($prod['price']);
         $objProduct->set_status('publish');
         $objProduct->set_sku($prod['sku']);
         $objProduct->set_description($prod['description']);

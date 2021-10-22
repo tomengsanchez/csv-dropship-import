@@ -18,6 +18,14 @@
     }
      
  }
+ 
+ var numberRegex = /^\s*[+-]?(\d+|\.\d+|\d+\.\d+|\d+\.)(e[+-]?\d+)?\s*$/;
+function validate_number(num){
+    
+    return(numberRegex.test(num.val()));
+}
+
+ 
  function validate_these(input_ojects){
     val_counter = 0;
     
