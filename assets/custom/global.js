@@ -2,18 +2,40 @@
  * Inline Table format json datashould be this ->    maptable: {First: "2nd Column"}
  */
 jQuery(document).ready(function(){
-
+    
 }
 );
 var data_per_lines = Array();
 var categories = Array();
+
  function inline_form_table_json(data,container){
+    jQuery('.select_category').selectmenu();
     data_per_lines = data.data_per_lines;
     if(data_per_lines){
         jQuery('#row_holder_finish').val(data_per_lines.length);
         categories = data.categories;
         var output= json_script_p(data.script);
-        output += '<button id="start_import" class"button">Start Import</button>';
+
+        opt = '';
+        cat_ctr = 0;
+        for(var r in data.row){
+            
+            col_n = data.row[r].split('wci_split')[1] * 1;
+            if(col_n == 3){
+                opt += '<option value="' + data.row[r].split('wci_split')[1] + '">'+ data.row[r].split('wci_split')[0] +'</option>';
+            }
+            else{
+                if(col_n > 30){
+                    col_head = data.row[r].split('wci_split')[0];
+                    if(col_head != ''){
+                        opt += '<option value="' + data.row[r].split('wci_split')[1] + '">'+ data.row[r].split('wci_split')[0] +'</option>';
+                    }
+                }
+                    
+            }
+        }
+
+        output += '<table><tr><td><span style="padding:0px 0px 0px 50px;">Please Select Column For Category : </span></td><td class="td_select"><select class="select select_category_column">' + opt + '</select></td><td><button id="start_import" class"button">Start Import</button></td></tr></table>';
         output += '<table class="dsi-table" id="#csv-field">';
         output += '<thead class="dsi-thead">';
         output += '<tr >';
@@ -22,8 +44,10 @@ var categories = Array();
         output += '<th >CSV Values</th>';
         output += '</thead>';
         output += '<tbody class="dsi-tbody">';
+        
         for(var r in data.row){
             //output += r + '->' + data.row[r] + "<br>";
+            opt += '<option>'+ data.row[r].split('wci_split')[0] +'</option>';
             output += '<tr >';
             output += '<td class="product-field" field-name="'+ r +'"><b>' + r + '</b></td>';
             output += '<td class="product-col wrap" csv-row-numbers="'+ data.row[r].split('wci_split')[1] + '">' + data.row[r].split('wci_split')[0]+ '['+ data.row[r].split('wci_split')[1]+ ']</td>';
@@ -35,7 +59,7 @@ var categories = Array();
         container.html(output);
     }
     else{
-        alert('Please Choose Correct CSV File');
+        jQuery('#csv_ajax_table').html('Please Select the Correct .CSV File');
     }
 }
 
@@ -51,8 +75,10 @@ csv_columns = Array();
  * Read Rows From TAble
  * @param {x} x 
  */
-function read_rows_from_table(x){
+function read_rows_from_table(x,selected_category){
     //get Table data
+    selected_category_column = selected_category;
+    
     var tbodyElement = x.children('tbody');
     var tr = tbodyElement.children('tr');
     
@@ -62,7 +88,7 @@ function read_rows_from_table(x){
         csv_columns.push(jQuery(this).siblings('td.product-col').attr('csv-row-numbers'));
     });
 
-    sends_data_to_ajax(data_per_lines);
+    sends_data_to_ajax(data_per_lines,selected_category_column);
     
     //jQuery.fn.alwayspogi('yesyes');
 
@@ -85,6 +111,7 @@ const ctr =1;
 function sends_data_to_ajax(){
     jQuery('#dsi-summary-table').append("<tr class='tr-please-wait'><td colspan='4'><h3>Please Wait...</h3></td></tr>");
     jQuery('.read_files').html(data_per_lines.length);
+    
     var b =1;
     jQuery('#row_holder_start').val(0 * 1);
     console.log(data_per_lines);
@@ -191,7 +218,7 @@ function sends_data_to_ajax(){
     //console.log(ctr);
     
 }
-
+var selected_category_column;
 function send_one_by_one_ajax(){
     trout = '';
     aj = jQuery.ajax({
@@ -202,7 +229,7 @@ function send_one_by_one_ajax(){
             names : field_names,
             values : field_values,
             csv_columns : csv_columns,
-            category:categories
+            selected_category : selected_category_column
             
         
         }
@@ -213,13 +240,9 @@ function send_one_by_one_ajax(){
             //jQuery('#row_holder_start').val(0 * 1);
         }
         else{
-            
             jQuery('#row_holder_start').val((jQuery('#row_holder_start').val() *1)+1); 
             send_one_by_one_ajax();
             var imported_files = 0;
-            
-           
-            
         }
         imported_files = jQuery('.import_files').html();
         jQuery('.progress').html(('0'));
@@ -251,3 +274,8 @@ function send_one_by_one_ajax(){
     });
 }
 
+
+function get_selected_column(selected){
+    selected_category_column = selected;
+    alert(selected);
+}

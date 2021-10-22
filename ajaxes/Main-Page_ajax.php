@@ -133,6 +133,7 @@ function csv_get_and_send($csv_file,$wc_fields){
         array('description','16'),
         array('sku','1'),
         array('description','16'),
+        array('family','3'),
         array('price','6'),
         array('weight','12'),
         array('length','14'),
@@ -141,13 +142,17 @@ function csv_get_and_send($csv_file,$wc_fields){
         array('stoc_quantity',''),
         array('tarrif_code','19'),
         array('image_1','23'),
-        array('image_2','24')
+        array('image_2','24'),
+        array('category','31'),
+        array('category1','32'),
     );
     
     
     $script = "jQuery('#start_import').click(function(e){
         e.preventDefault();
-        read_rows_from_table(jQuery(this).siblings('table'));
+        //selected_category_column = jQuery(this).parent().siblings('td.td_select').children('select.select_category_column').val();
+        sel = jQuery(this).parent().siblings('td.td_select').children('select.select_category_column').val();
+        read_rows_from_table(jQuery(this).siblings('table'),sel);
     }).addClass('button').animate('1000');";
     $objProduct = new WC_Product_Simple();
      
@@ -231,8 +236,9 @@ function get_field_then_import(){
     }
     $status_message = '';
     $cats = $_POST['category'];//all cats in the file
-    
-    $category_id = $prd->category_manipulation($_POST['lines'][3]);
+    $categ_col = $_POST['selected_category'];
+
+    $category_id = $prd->category_manipulation($_POST['lines'][$categ_col]);
     
 
     //$category_id = get_product_category_id($_POST['lines'][3]); //cats per line
@@ -287,11 +293,13 @@ function get_field_then_import(){
             'sku'=> $_POST['lines'][1],
             'name'=> $_POST['lines'][10],
             'price'=> $_POST['lines'][6],
+            'category'=>$_POST['lines'][$_POST['selected_category']],
             'length'=> $dim[0],
             'width'=> $dim[1]
             
         ],
-        'status_message'=>$status_message
+        'status_message'=>$status_message,
+        'selected_cat' => $_POST['selected_category']
     ]);
 
     exit();

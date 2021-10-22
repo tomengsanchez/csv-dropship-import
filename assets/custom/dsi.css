@@ -19,7 +19,7 @@
     width:100px;
 }
 #start_import{
-   margin:10px 0px 0px 520px;
+   margin:10px 0px 0px 10px;
 }
 /* default styling. Nothing to do with freexing first row and column */
 .dsi-main {display: flex;}
