@@ -13,7 +13,8 @@ add_action('admin_enqueue_scripts',function(){
     wp_localize_script('dsi-js-custom','locsData',array(
         'csv_nonce' => wp_create_nonce('csv_uploads'),
         'admin_url' => get_admin_url(),
-        'home_url'=> home_url()
+        'home_url'=> home_url(),
+        'ajax_js_url' => plugin_dir_url('12') . "csv-dropship-import/ajaxes/jScript/"
     ));
 })
 ?>

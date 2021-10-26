@@ -8,6 +8,9 @@
  * 
  * 
  */
+
+use function Composer\Autoload\includeFile;
+
 add_action('wp_ajax_upload_csv_files','uploadcsv_files_test');
 
 /** function to ajax upload
@@ -142,9 +145,8 @@ function csv_get_and_send($csv_file,$wc_fields){
         array('tarrif_code','19'),
         array('image_1','23'),
         array('image_2','24'),
-        array('category','31'),
-        array('category1','32'),
-        array('family','3'),
+        array('Category','31'),
+        array('Family','3'),
     );
     
     
@@ -162,7 +164,7 @@ function csv_get_and_send($csv_file,$wc_fields){
         }
         else{
             if(mark_up_price_value ==''){
-                alert('Please Input Number');
+                alert('Please Input Number1');
                 jQuery('input#price_mark_up_text').focus();
             }
             else{
@@ -193,6 +195,7 @@ function csv_get_and_send($csv_file,$wc_fields){
         }
     });
     ";
+    $script = global_ajax_script('main-page-ajax-local.js');
     $objProduct = new WC_Product_Simple();
      
     /** Collected */
@@ -211,7 +214,12 @@ function csv_get_and_send($csv_file,$wc_fields){
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
         $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
+      
+        if($sample_data[$x-1][1] == 16){
+            //$sample_csv = 'Webpage Description (html)';
+            $sample_csv = substr($sample_csv,0,50) . "......";
 
+        }
         
         $upload_mapping[$sample_data[$x-1][0]] = $head[$sample_data[$x-1][1]] . "wci_split". $sample_data[$x-1][1] . "wci_split". $sample_csv . "wci_split". $csv_value;   
     }
@@ -251,7 +259,15 @@ function get_field_then_import(){
     $prod_inst = new WC_Product();
     $price = $_POST['lines'][6];
 
-
+    if($_POST['upload_images_yes'] == 'true'){
+        $thumbnail1 = $_POST['lines'][23];
+        $thumbnail2 = $_POST['lines'][24];
+    }
+    else{
+        $thumbnail1 = null;
+        $thumbnail2 = null;
+    }
+    
 
     $dim = $_POST['lines'][14];
     $dim = trim($dim,'(mm)');
@@ -293,15 +309,48 @@ function get_field_then_import(){
     
 
     //$category_id = get_product_category_id($_POST['lines'][3]); //cats per line
-
+    $image_name1  = $_POST['lines'][23];
+    
     if($existing == 1){ // IF SKU IS 
+        if($_POST['upload_images_yes'] == 'true'){
+            //delete_ main image
+            $p = new WC_Product($update_id);
+
+            $attachmentID= $p->get_image_id();
+
+
+            //wp_delete_attachment('34041', true);
+
+            $attachment_path = get_attached_file( $attachmentID); 
+            //Delete attachment from database only, not file
+            $delete_attachment = wp_delete_attachment($attachmentID, true);
+            //Delete attachment file from disk
+            $delete_file = unlink($attachment_path);
+
+            //delete all gallery images
+
+
+            $gallery_image_ids= $p->get_gallery_image_ids();
+
+            for($i = 0; $i <= count($gallery_image_ids) ; $i++){
+
+                $attachment_path = get_attached_file( $gallery_image_ids[$i]); 
+                //Delete attachment from database only, not file
+                $delete_attachment = wp_delete_attachment($gallery_image_ids[$i], true);
+                //Delete attachment file from disk
+                $delete_file = unlink($attachment_path);
+            }
+            
+        }
+        
+
         $pid = $prd->dsi_wc_product_simple_update([
             'id'=> $update_id,
             'name'=>$_POST['lines'][10],
             'sku'=>$sku,
             'price'=>$price,
-            'thumbnail'=>$_POST['lines'][23],
-            'thumbnail2'=>$_POST['lines'][24],
+            'thumbnail'=>$thumbnail1,
+            'thumbnail2'=>$thumbnail2,
             'description'=>$_POST['lines'][16],
             'category'=> $category_id,
             'length'=>$lnt,
@@ -310,6 +359,7 @@ function get_field_then_import(){
             'weight'=>$_POST['lines'][12],
 
         ]);
+        
         $status_message = 'Updated';
     }
     else{
@@ -318,8 +368,8 @@ function get_field_then_import(){
                 'name'=>$_POST['lines'][10],
                 'sku'=>$sku,
                 'price'=>$price,
-                'thumbnail'=>$_POST['lines'][23],
-                'thumbnail2'=>$_POST['lines'][24],
+                'thumbnail'=>$thumbnail1,
+                'thumbnail2'=>$thumbnail2,
                 'description'=>$_POST['lines'][16],
                 'category'=> $category_id,
                 'length'=>$lnt,
@@ -351,9 +401,9 @@ function get_field_then_import(){
         'mark_up_value' => $_POST['mark_up_value'],
         'mark_up_perc' => $percent,
         'price_up'=> $price,
+        'media' => get_attached_media( '', $pid ) 
 
     ]);
-
     exit();
 }
 
@@ -366,5 +416,38 @@ function get_product_category_id($cat_name){
     $res = get_terms('product_cat',$cat_args);
     return $res[0]->term_id;
 
+}
+
+add_action('wp_ajax_add_ajax_script','add_ajax_script');
+
+function add_ajax_script(){
+    
+    ?>
+    <script >
+        <?php insert_js_locally('main.js'); ?>
+    </script> 
+        <button class='tomengbutton'>test Jav</button>
+    <?php 
+    
+    exit();
+}
+
+/**
+ * Function that insert javascript inside an ajax
+ * 
+ * @param file $jsFile js file inside the ajaxes/jScript/ folder
+ */
+function global_ajax_script($jsFile){
+
+    $ajax_url = plugin_dir_url('12') . "csv-dropship-import/ajaxes/jScript/" .$jsFile;
+    
+    return $ajax_url;
+    //return "<script src='". $ajax_url ."'></script>";
+    
+    exit();
+}
+function insert_js_locally($jsFile){
+    $ajax_url = plugin_dir_path(__FILE__) . "/jScript/" . $jsFile;
+    require_once($ajax_url);
 }
 ?>

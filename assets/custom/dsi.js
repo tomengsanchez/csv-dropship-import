@@ -58,6 +58,7 @@ jQuery(document).ready(function(){
             //dataType:'json',
             contentType:false,
             processData: false,
+            cache:false,
             data:form_data,
             
             success:function(res,s){

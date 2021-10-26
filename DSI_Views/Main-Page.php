@@ -5,7 +5,25 @@
 ?>
 
 
+<?php 
+// $id = '34077';
+// $p = new WC_Product($id);
 
+
+// ar_to_pre($p->get_gallery_image_ids());
+
+// $gallery_image_ids= $p->get_gallery_image_ids();
+
+// for($i = 0; $i < count($gallery_image_ids) ; $i++){
+    
+//     $attachment_path = get_attached_file( $gallery_image_ids[$i]); 
+//     //Delete attachment from database only, not file
+//     $delete_attachment = wp_delete_attachment($gallery_image_ids[$i], true);
+//     //Delete attachment file from disk
+//     $delete_file = unlink($attachment_path);
+// }
+
+?>
 <h1 class="h1">Dropship CSV File Import</h1>
 <i>Lets you create or update your WooCommerce Products using a CSV file provided by the Dropship supplier.</i>
 
@@ -33,8 +51,10 @@
                 <td>
                 
                 <button id='delete_all_p' class='button'>Delete All Product (Dev Purposes only)</button>
+                <button id='test' class='button'>Test Ajax Script</button>
+                <div id='testDiv'></div>
                     <div id='delete_ajxdiv'>
-
+                        
                     </div>
             </td>
             </tr>

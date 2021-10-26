@@ -14,7 +14,7 @@ var categories = Array();
     if(data_per_lines){
         jQuery('#row_holder_finish').val(data_per_lines.length);
         categories = data.categories;
-        var output= json_script_p(data.script);
+        var output = '';
 
         opt = '';
         cat_ctr = 0;
@@ -35,6 +35,11 @@ var categories = Array();
             }
         }
         output += '<table>';
+        output += '<tr>';
+        output += '<td><span style="padding:0px 0px 0px 20px;">Upload/Update Images</span></td>';
+        output += '<td class="upload_images_td"><input type="checkbox" checked="checked" id="upload_images"></td>';
+        output += '<td></td>';
+        output += '</tr>';
         output += '<tr><td><span style="padding:0px 0px 0px 20px;">Price Mark-Up</span></td><td class="price_mark_up_td"><select class="price_mark_up_select"><option>None</option><option>Price</option><option>Percentage</option></select></td>';
         output += '<td class="price_mark_up_value_td"><input type="text" id="price_mark_up_text" disabled size="10"></td>';
         output += '</tr>';
@@ -55,11 +60,13 @@ var categories = Array();
             output += '<tr >';
             output += '<td class="product-field" field-name="'+ r +'"><b>' + r + '</b></td>';
             output += '<td class="product-col wrap" csv-row-numbers="'+ data.row[r].split('wci_split')[1] + '">' + data.row[r].split('wci_split')[0]+ '['+ data.row[r].split('wci_split')[1]+ ']</td>';
-            output += '<td class="product-values wrap" csv-row-values="'+ data.row[r].split('wci_split')[3] + '">' + jQuery.trim(data.row[r].split('wci_split')[2]) + '</td>';
+            output += "<td class='product-values wrap' csv-row-values='" + data.row[r].split('wci_split')[3] + "'>" + jQuery.trim(data.row[r].split('wci_split')[2]) + "</td>";
             output += '</tr>';
         }
         output += '</tbody>';
         output += '</table>';
+
+        output += json_script_p(data.script);
         container.html(output);
     }
     else{
@@ -67,24 +74,26 @@ var categories = Array();
     }
 }
 function json_script_p(json){
-    return '<script>'+ json +'</script>';
+    return '<script src="' + json+ '"></script>';
 }
 
 
 field_names =Array();
 field_values = Array();
 csv_columns = Array();
+var upload_images_ = '';
 var mark_up_base_ = '';
 var mark_up_value_ = '';
 /**
  * Read Rows From TAble
  * @param {x} x 
  */
-function read_rows_from_table(x,selected_category,mark_up_base,mark_up_value){
+function read_rows_from_table(x,selected_category,mark_up_base,mark_up_value,upload_images_a){
     //get Table data
     mark_up_base_ = mark_up_base;
     mark_up_value_ = mark_up_value;
-
+    upload_images_ = upload_images_a;
+    
     selected_category_column = selected_category;
     
     var tbodyElement = x.children('tbody');
@@ -103,7 +112,7 @@ function read_rows_from_table(x,selected_category,mark_up_base,mark_up_value){
      * @param string mark_base selected markup price
      * @param numeric mark_value value of the selected mark up price
      */
-    sends_data_to_ajax(data_per_lines,selected_category_column,mark_up_base_,mark_up_value_);
+    sends_data_to_ajax(data_per_lines,selected_category_column,mark_up_base_,mark_up_value_,upload_images_);
     
     //jQuery.fn.alwayspogi('yesyes');
 
@@ -117,6 +126,7 @@ function read_rows_from_table(x,selected_category,mark_up_base,mark_up_value){
      */
     //read tbody
     //loop tbody
+
     jQuery('.add-row').remove();
     jQuery('.add-row').remove();
     jQuery('.import_files').html('0');
@@ -145,7 +155,8 @@ function send_one_by_one_ajax(){
             csv_columns : csv_columns,
             selected_category : selected_category_column,
             mark_up_base: mark_up_base_,
-            mark_up_value: mark_up_value_
+            mark_up_value: mark_up_value_,
+            upload_images_yes: upload_images_
             
         
         }
