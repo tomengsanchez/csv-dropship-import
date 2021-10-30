@@ -29,7 +29,6 @@
 
 <hr>
 
-
 <fieldset >
     <form method='post'action="" class="" enctype='multipart/form-data'>
         <table class="table">
@@ -38,7 +37,7 @@
                 <td>
                     <select name="dropship_company" id="dropship_company">
                         <option value='aw-dropship'>AW DROPSHIP</option>
-                        <option value='dropshipzone'>Dropship Zone</option>
+                        <option selected value='idropship'>i Dropship</option>
                     </select>
                 </td>
             
@@ -51,7 +50,7 @@
                 <td>
                 
                 <button id='delete_all_p' class='button'>Delete All Product (Dev Purposes only)</button>
-                <button id='test' class='button'>Test Ajax Script</button>
+                <button id='test12' onclick='jQuery("#csv_file").trigger("change")' class='button'>Test Ajax Script</button>
                 <div id='testDiv'></div>
                     <div id='delete_ajxdiv'>
                         
@@ -67,12 +66,15 @@
         
     ?>
 
-<div class='dsi-row'>
+<div class='dsi-row' >
+
     <input type='hidden' class='loop-counter' value='0'>
     <div class="dsi-col">
+    <h2 style='padding-left:35px'>IMPORT PARAMETERS</h2>
         <div class='csv-import-table-div' id='csv_ajax_table'></div>
     </div>
     <div class="dsi-col" style='min-height:400px'>
+    <h2 style='padding-left:20px'>IMPORT STATUS</h2>
         <?php 
                         
         ?>
@@ -84,25 +86,26 @@
                 alert(1);
             });
         </script>
-        <div class="import-result" >
+        <div class="import-result" style='margin-top:118px'>
             <input type='hidden' id='row_holder_finish'>
             <input type='hidden' id='row_holder_start' value='0'>
             <table width='600'>
                 <tr>
-                    <td width='200'><h3 style='padding-left:12px'><span class='import_files'>0</span> of <span class='read_files'>0</span > are imported</h3></td>
+                    <td width='300'><h3 style='padding-left:20px'><span class='import_files'>0</span> of <span class='read_files'>0</span > are Processed</h3></td>
                     <td width='100'><h3><b>Progress : </b></h3></td>
                     <td ><div style='width:200px' id='progressbar'></div></td>
                 </tr>
             </table>
-            <table class=''   id='dsi-summary-table' style='width:600px;background-color:white'>
-                <tr class='first-tr'>
-                    <th>Sku</th>
-                    <th>Product Name</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                </tr>
-                <tbody>
-                
+            <table class='dsi-table'   id='dsi-summary-table' style='width:600px;background-color:white'>
+                <thead class='dsi-thead'>
+                    <tr class='first-tr '>
+                        <th>Sku</th>
+                        <th>Product Name</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                    </tr>
+                    <tbody>
+                </thead>
             </table>      
         </div>
     </div>

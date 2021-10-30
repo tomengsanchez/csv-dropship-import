@@ -28,7 +28,7 @@ function validate_number(num){
  
  function validate_these(input_ojects){
     val_counter = 0;
-    
+    exit();
     jQuery(input_ojects).each(function(){
         if(validate_this(this)==false){
             val_counter++;
@@ -42,8 +42,18 @@ function validate_number(num){
 
 jQuery(document).ready(function(){
     //jQuery('.upload_control_group').controlgroup();
+    jQuery('#dropship_company').change(function(){
+        jQuery('#csv_file').trigger('change');
+    });
     jQuery('#csv_file').change(function(e){
         e.preventDefault();
+        //reset import status parameter
+        
+        
+        jQuery('.add-row').remove();
+        jQuery( "#progressbar" ).progressbar({value:0});
+        jQuery('.import_files').html(0);
+        jQuery('.read_files').html(0);
         // jQuery('#csv_ajax_table').html('<img class="loading-small" src="' + locsData.home_url + '/wp-content/plugins/csv-dropship-import/assets/img/loading.png")">');
         jQuery('#csv_ajax_table').html('Please Wait');
         var file_data = jQuery("#csv_file")[0].files[0]; //Get the File Input
@@ -65,7 +75,32 @@ jQuery(document).ready(function(){
                 //alert(res);
                 
                 jQuery('#csv_ajax_table').html('LOADING...');
-                inline_form_table_json(res,jQuery('#csv_ajax_table'));
+
+                if(jQuery('#dropship_company').val()=='aw-dropship'){
+                    inline_form_table_json(res,jQuery('#csv_ajax_table'));
+                    // ajax the script
+                    jQuery.ajax({
+                        url:locsData.admin_url+'admin-ajax.php?action=get_ajax_script_main_page',
+                        cache:false,
+                        success:function(ajs){
+                            // ajs = ajs.replace(/\s/g, '');
+                            jQuery('#csv_ajax_table').append(ajs);
+                        }
+                    });
+                }
+                if(jQuery('#dropship_company').val()=='idropship'){
+                    
+                    inline_form_table_json(res,jQuery('#csv_ajax_table'));
+                    jQuery.ajax({
+                        url:locsData.admin_url+'admin-ajax.php?action=get_ajax_script_main_page',
+                        cache:false,
+                        success:function(ajs){
+                            // ajs = ajs.replace(/\s/g, '');
+                            jQuery('#csv_ajax_table').append(ajs);
+                        }
+                    });
+                }
+                
                 // if(!res.message)
                 //     jQuery('#csv_ajax_table').html('12');
                 // else
@@ -152,8 +187,6 @@ jQuery(document).ready(function(){
 
 jQuery(document).ready(function(){
     jQuery("#settings-tabs").tabs();
-    
-
 });
 
 

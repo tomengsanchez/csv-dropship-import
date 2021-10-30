@@ -35,7 +35,7 @@ class DSI_Products extends DSI_Loader{
     public function __construct(){
         
     }           
-    
+    var $valid_name_heading = array('Name','Unit Name');
     var $wc_api;
     function get_all_wc_default_field(){
         $default_field = array(

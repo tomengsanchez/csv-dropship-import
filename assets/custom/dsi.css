@@ -8,7 +8,7 @@
   grid-template-columns: 670px 400px;
 }
 .dsi-col{
-  
+  /* border:1px solid gray  */
 }
 .span_parser_alert{
     border:1px solid red;
@@ -19,7 +19,7 @@
     width:100px;
 }
 #start_import{
-   margin:10px 0px 0px 10px;
+   /* margin:10px 0px 0px 10px; */
 }
 /* default styling. Nothing to do with freexing first row and column */
 .dsi-main {display: flex;}
