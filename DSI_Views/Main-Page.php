@@ -62,7 +62,25 @@
 
 <hr>
     <?php 
-      
+        global $wpdb;
+        $tdb = new DSI_Db();
+        $post_name = '10 ml Lavender Essential Oil';
+
+        $sqlSelectSlug = "
+            SELECT * FROM " . $wpdb->prefix. "posts
+            WHERE post_name = '" . sanitize_title($post_name) . "'
+        ";
+
+        
+        
+        $r = $tdb->con->query($sqlSelectSlug);
+        if($r->num_rows > 1){
+            $post_name = $post_name . "-" . ($r->num_rows + 1);
+        }
+        
+        echo $post_name;
+        
+        
         
     ?>
 

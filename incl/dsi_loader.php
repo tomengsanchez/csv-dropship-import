@@ -10,6 +10,7 @@ Class DSI_Loader{
         $this->load_controller('DSI_Main_Controller');
         $this->load_controller('DSI_Dropship_Import_Settings');
         $this->load_controller('DSI_Dropship_Providers');
+        $this->load_controller('DSI_Db');
 
         $this->load_controller('DSI_Products');
         $this->load_files();

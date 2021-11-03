@@ -4,19 +4,17 @@
  * 
  * @param array $collect_meta_to_import - collect all the final meta/field before import
  * 
- * 
- * 
  */
 
 require __DIR__ . '/vendor/autoload.php';
 
 use Automattic\WooCommerce\Client;
-
+use Dompdf\FrameDecorator\Image;
 
 class DSI_Products extends DSI_Loader{
     /** product information  */
     /** collect all the final meta/field before import */
-
+    var $con;
     var $products = array();
     var $collect_meta_to_import = array();
     var $data_per_lines = array();
@@ -120,110 +118,8 @@ class DSI_Products extends DSI_Loader{
         //return $this->data_per_lines;
     }
     /**
-     * Import CSV to Woocommerce Products
-     *  
-     * @param array $column_assignment - collection of default_column and the csv_column number example : 'post_title'=> [10]
-     * @param array $lines csv_files columns and rows
-     * 
-     * 
-     */
-    function import_csv_to_wc($column_assigment= array(),$lines = array()){    
-        echo count($lines);   
-        
-
-        for($x = 0; $x < count($lines); $x++){//loop each line
-            //loop each field
-            echo "Impor these line " . $x;
-
-            echo "<br>";
-            echo "<table border=1>";
-            echo "<tr>";
-            
-            echo "<th>Index</th>";
-            echo "<th>Meta VAlue</th>";
-            echo "<th>Csv Column Number</th>";
-            echo "<th>Meta Value</th>";
-            echo "</tr>";
-            for($i = 0; $i < count($column_assigment);$i++ ){// loop each field
-
-                echo "<tr>";    
-                echo "<td> " . $i. "</td>";
-                echo "<td> " . $column_assigment[$i][0]. "</td>";
-                echo "<td> " . $column_assigment[$i][1]. "</td>";
-                array_push($this->final_fields_to_import,$column_assigment[$i][0]);
-                $val = '';
-                if($column_assigment[$i][1] == 0){
-                    $val = 'Please Add Another meta field using : ' . $column_assigment[$i][0] . "-". $val = $lines[$x][$column_assigment[$i][1]];
-                }   
-                else
-                    $val = $lines[$x][$column_assigment[$i][1]];
-                    if($i == 4){
-                        $val = $this->product_type_others['default'];
-                    }
-                echo "<td>";
-                    echo $val;
-                    array_push($this->final_values_to_import,$val);
-
-                echo "</td>";
-                echo "</tr>";    
-            }
-            echo "</table>";
-        }
-    }
-    /**
-     * This function will create products using rest
-     * 
-     * @param array $field final fields
-     * @param array $value final values 
-     * 
-     * 'ck_0ba977f283e08a5bc62bd3947cfe4a3c705e9c49','cs_d67316e5ce91a56b2d753732d4a54cd2f9a33e13'
-     */
-
-    public function dsi_create_products_rest(){
-        $woocommerce = new Client(
-            'http://localhost/ud/',
-            get_option('dsi_wc_ck'),
-            get_option('dsi_wc_cs'),
-            [
-                'wp_api' => true,
-                'version' => 'wc/v3'
-            ]
-
-            ); 
-        //ar_to_pre($woocommerce->get('products'));
-        
-        $data = [
-            'name' => 'Premium Quality',
-            'type' => 'simple',
-            '_regular_price' => '21.99',
-            'description' => 'Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.',
-            'short_description' => 'Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.',
-            'categories' => [
-                [
-                    'id' => 9
-                ],
-                [
-                    'id' => 14 
-                ]
-            ],
-            'images' => [
-                [
-                    'src' => 'http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_2_front.jpg'
-                ],
-                [
-                    'src' => 'http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_2_back.jpg'
-                ]
-            ]
-        ];
-        ar_to_pre($data);
-        
-        ar_to_pre($woocommerce->post('products', $data));
-    }
-
-    /**
      * This will create products using wpdb
      */
-
      public function dsi_create_products_wpdb($data_per_lines = array()){
         //ar_to_pre($data_per_lines);
         for($i = 1; $i < count($data_per_lines); $i++){// loop each line
@@ -266,120 +162,6 @@ class DSI_Products extends DSI_Loader{
      /**
       * For the Mean Time This will be used for AW Dropship
       */
-     public function dsi_create_products_rest_aw_dropship($data_per_lines = array()){
-        header('Content-Type:application/json');
-        $created = 0;
-        $updated = 0;
-        $woocommerce = new Client(
-        home_url(),
-        get_option('dsi_wc_ck'),
-        get_option('dsi_wc_cs'),
-        [
-            'wp_api' => true,
-            'version' => 'wc/v3'
-        ]
-
-        ); 
-        try{
-            $woocommerce->get('orders');
-            $fieldsetclass = '';
-        }
-        catch( Exception $e){
-            $err = $e->getMessage();
-            if (strpos($err, 'key')){
-                echo json_encode(['message'=>'<h4>Consumer Key is Invalid</h4>']);
-                die();
-            }
-
-            if (strpos($err, 'signature')){
-                echo json_encode(['message'=>'<h4>Consumer Signature is Invalid</h4>']);
-                die();
-            }
-            
-            
-        }
-
-
-        for($i = 1; $i < count($data_per_lines); $i++){// loop each line
-
-            $in = $i-1;
-            //echo $data_per_lines[$i][23];echo "<br>";
-            $imgs =array();
-            // if($data_per_lines[$in][23]){
-            //     array_push($imgs,
-            //         ['src' => $data_per_lines[$in][23]]
-            //     );
-            // }
-            // if($data_per_lines[$in][24]){
-            //     array_push($imgs,
-            //         ['src' => $data_per_lines[$in][24]]
-            //     );
-            // }
-            // if($data_per_lines[$in][25]){
-            //     array_push($imgs,
-            //         ['src' => $data_per_lines[$in][25]]
-            //     );
-            // }
-            // if($data_per_lines[$in][26]){
-            //     array_push($imgs,
-            //         ['src' => $data_per_lines[$in][26]]
-            //     );
-            // }
-
-            $data = [
-                'name' => $data_per_lines[$in][10],
-                'type' => 'simple',
-                'regular_price' => $data_per_lines[$in][6],
-                'description' => $data_per_lines[$in][16],
-                'short_description' => $data_per_lines[$in][16],
-                'categories' => [
-                    [
-                        'id' => 9
-                    ],
-                    [
-                        'id' => 14 
-                    ]
-                ],
-                'images'=>$imgs,
-                'sku'=> $data_per_lines[$in][1]
-            ];
-            //echo "Done";
-            //print_r($woocommerce->get('products'));
-            //check if sku existing
-
-            $existing = $woocommerce->get('products',['sku'=>$data_per_lines[$in][1]]);
-            //echo $data_per_lines[$in][1];
-            if(count($existing) <= 0){
-                //echo "insert";
-                $woocommerce->post('products', $data);  
-                $created++;
-            }
-            else{
-                //echo $existing[0][1];
-                $woocommerce->put('products/' . $existing[0]->id, $data);
-                //ar_to_pre($existing);
-                $updated++;
-            }
-        }
-        $message =  "<h4>" . $created . " rows Created and " . $updated. " rows Updated</h4>";
-        echo json_encode([
-            'message' => $message
-        ]);
-    }
-    public function api_test_connect(){
-        $woocommerce = new Client(
-            home_url(),
-            get_option('dsi_wc_ck'),
-            get_option('dsi_wc_cs'),
-            [
-                'wp_api' => true,
-                'version' => 'wc/v3'
-            ]
-        ); 
-        $this->wc_api = $woocommerce;
-        
-    }
-    
     /** 
      * This will insert product via WC_Product_Simple
      * 
@@ -392,9 +174,10 @@ class DSI_Products extends DSI_Loader{
         
 
         // CREATE PRODUCTS
-        $objProduct = new WC_Product_Simple();
+        $objProduct = new WC_Product();
         $objProduct->set_name($prod['name']);
         $objProduct->set_regular_price($prod['price']);
+        $objProduct->set_sale_price($prod['sale_price']);
         $objProduct->set_status('publish');
         $objProduct->set_sku($prod['sku']);
         $objProduct->set_description($prod['description']);
@@ -402,6 +185,7 @@ class DSI_Products extends DSI_Loader{
         $objProduct->set_width($prod['width']);
         $objProduct->set_height($prod['height']);
         $objProduct->set_weight($prod['weight']);
+        
         $objProduct->set_category_ids(array($prod['category']));
         //$objProduct->set_image_id($prod);
 
@@ -714,6 +498,325 @@ class DSI_Products extends DSI_Loader{
         return $res[0]->term_id;
     
     }
+
+    /** 
+     * Create Products Through RAW SQL
+     * 
+     */
+    function connect_db(){
+        $this->con = new mysqli(DB_HOST,DB_USER,DB_PASSWORD,DB_NAME);
+
+    }
+    function insert_product_raw_sql($table, $args){
+        global $wpdb;
+        $this->connect_db();
+        //$dsidb = new DSI_Db();
+
+        //check slug
+        $post_name = sanitize_title($args['name']);
+
+        $sqlSelectSlug = "
+            SELECT * FROM " . $wpdb->prefix. "posts
+            WHERE post_name = '" . $post_name . "'
+        ";
+
+        
+        
+        $r = $this->con->query($sqlSelectSlug);
+        if($r->num_rows > 0){
+            $post_name = $post_name . "-" . ($r->num_rows + 1);
+        }
+        
+        // insert to post
+
+        $sqlInsert = "
+            INSERT INTO " . $wpdb->prefix."posts
+            (
+                post_author,
+                post_date,
+                post_date_gmt,
+                post_modified,
+                post_modified_gmt,
+                post_content,
+                post_title,
+                post_excerpt,
+                post_status,
+                post_name,
+                post_type,
+                to_ping,
+                pinged,
+                post_content_filtered,
+                post_parent,
+                post_mime_type
+
+            )
+            VALUES
+            (
+                '" . get_current_user_id(). "', /*post_author*/
+                '" .  date('Y-m-d H:i:s') . "',/*post_date*/
+                '" .  date('Y-m-d H:i:s') . "', /*post_date_gmt*/
+                '" .  date('Y-m-d H:i:s') . "', /*post_modified*/
+                '" .  date('Y-m-d H:i:s') . "',/*post_modified_gmt*/
+                '" . $args['description'] . "',/*post_content*/
+                '" . $args['name'] . "', /*post_title*/
+                '', /*post_author*/
+                'publish', /*post_status*/
+                '" . $post_name . "', /*post_name*/
+                'product', /*post_type*/
+                ' ', /*to_ping*/
+                ' ', /*pinged*/
+                ' ', /*post_content_filtered*/
+                0, /*post_parent*/
+                ' ' /*post_mime_type*/
+            )
+        ";
+        $this->con->query($sqlInsert);
+        $product_id = $this->con->insert_id;
+        $post_id = $product_id;
+        //Upate the taxonomy
+        wp_set_object_terms( $post_id, 'simple', 'product_type' );
+        // Update the category
+        
+        $this->dsi_product_update_category($product_id,$args['category']);
+
+        //insert thumbnail
+        $thumbnail_id = $this->dsi_set_thumbnail($args['thumbnail']);
+        $this->dsi_product_update_meta( $post_id, '_thumbnail_id', $thumbnail_id );
+
+        //insert gallery images
+
+        $images = $this->dsi_set_image_gallery($args['images']);
+        $images = implode(",",$images);
+        $this->dsi_product_update_meta( $post_id, '_product_image_gallery', $images );
+            
+        $this->dsi_product_update_meta($product_id,'_sku',$args['sku']);
+        $this->dsi_product_update_meta($product_id,'_price',$args['price']);
+        
+        $this->dsi_product_update_meta( $post_id, '_visibility', 'visible' );
+        $this->dsi_product_update_meta( $post_id, '_stock_status', 'instock');
+        $this->dsi_product_update_meta( $post_id, 'total_sales', '0' );
+        $this->dsi_product_update_meta( $post_id, '_downloadable', 'no' );
+        $this->dsi_product_update_meta( $post_id, '_virtual', 'no' );
+        $this->dsi_product_update_meta( $post_id, '_regular_price', $args['price'] );
+        $this->dsi_product_update_meta( $post_id, '_sale_price', '');
+        $this->dsi_product_update_meta( $post_id, '_purchase_note', '' );
+        $this->dsi_product_update_meta( $post_id, '_featured', 'no' );
+        $this->dsi_product_update_meta( $post_id, 'product_shipping_class', '');
+        $this->dsi_product_update_meta( $post_id, '_weight', $args['weight'] );
+        $this->dsi_product_update_meta( $post_id, '_length', $args['length'] );
+        $this->dsi_product_update_meta( $post_id, '_width', $args['width'] );
+        $this->dsi_product_update_meta( $post_id, '_height', 0 );
+        $this->dsi_product_update_meta( $post_id, '_product_attributes', array() );
+        $this->dsi_product_update_meta( $post_id, 'sale_price_dates_from', '' );
+        $this->dsi_product_update_meta( $post_id, 'sale_price_dates_to', '' );
+        $this->dsi_product_update_meta( $post_id, '_price', $args['price'] );
+        $this->dsi_product_update_meta( $post_id, '_sold_individually', '' );
+        $this->dsi_product_update_meta( $post_id, '_manage_stock', 'no' );
+        $this->dsi_product_update_meta( $post_id, '_backorders', 'no' );
+        $this->dsi_product_update_meta( $post_id, '_stock', '' );
+    }
+    /**
+     * Function update Raw SQL
+     * 
+     * 
+     */
+    public function update_product_raw_sql($table,$args){
+        
+        $product_id = $args['id'];
+        $sqlUpdate = "
+            UPDATE " . $table . " 
+            SET 
+            post_modified,
+            post_modified_gmt,
+            post_content,
+            post_title,
+            post_excerpt,
+            post_status,
+            post_name,
+            post_type,
+            to_ping,
+            pinged,
+            post_content_filtered,
+            post_parent,
+            post_mime_type
+        ";
+    }
+    /**
+     * Function to udpate the meta
+     * 
+     * @param string $product_id
+     * @param string $metakey
+     * @param string @metavalue
+     * 
+     */
+    function dsi_product_update_meta($product_id,$metakey,$metavalue){
+        global $wpdb;
+        $table = $wpdb->prefix . "postmeta";// table prefix
+        //check if post_id exist
+        // if yes - create new postmeta
+        // else - update postmeta with new filter
+        $sqlSelectMeta = "
+            SELECT * FROM " . $table . " 
+            WHERE product_id = '" . $product_id. "'
+            AMD meta_key = '" . $metakey . "'
+            
+        ";
+        $res = $this->con->query($sqlSelectMeta);
+        if($res->num_rows > 0){
+            $sqlUpdateMeta = "
+                UPDATE " . $table . " 
+                SET meta_value ='" . $metavalue . "'
+                WHERE 
+                    post_id = '" . $product_id . "'
+                AND 
+                    meta_key = '" . $metakey . "'
+            ";
+            $this->con->query($sqlUpdateMeta);
+            
+        }
+        else{
+            $sqlInsertMeta = "INSERT INTO " . $table. " (post_id,meta_key,meta_value) VALUES('" . $product_id . "','" . $metakey . "','" . $metavalue . "')";
+            $this->con->query($sqlInsertMeta);
+        }
+    }
+    /**
+     * Update Product Category
+     * 
+     */
+    function dsi_product_update_category($product_id,$category_id = array()){
+        global $wpdb;
+        $table = $wpdb->prefix . "term_relationships";// table prefix
+        if(!empty($category_id)){
+            for($x = 0 ; $x< count($category_id); $x++){
+                $sqlInsertTerm = "
+                    INSERT INTO " . $table . " (object_id,term_taxonomy_id)VALUES('" . $product_id . "','" . $category_id[$x] ."')
+                ";
+                $this->con->query($sqlInsertTerm);
+                
+            }
+        }else{
+           // wp_set_object_terms( $product_id, 'uncategorized', 'product_cat' );
+        }
+        
+    }
+    /** 
+     * Manually Set the image
+     */
+    function dsi_set_thumbnail($thumbnail){
+        // SET THUMBNAIL TO POST
+        // Add Featured Image to Post
+        if($thumbnail != null){
+            $image_url        = $thumbnail; // Define the image URL here
+            $image_name       = 'main.png';
+            $upload_dir       = wp_upload_dir(); // Set upload folder
+            $image_data       = file_get_contents($image_url); // Get image data
+            $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
+            $filename         = basename( $unique_file_name ); // Create image file name
+
+            // Check folder permission and define file location
+            if( wp_mkdir_p( $upload_dir['path'] ) ) {
+                $file = $upload_dir['path'] . '/' . $filename;
+            } else {
+                $file = $upload_dir['basedir'] . '/' . $filename;
+            }
+
+            // Create the image  file on the server
+            file_put_contents( $file, $image_data );
+
+            // Check image file type
+            $wp_filetype = wp_check_filetype( $filename, null );
+
+            // Set attachment data
+            $attachment = array(
+                'post_mime_type' => $wp_filetype['type'],
+                'post_title'     => sanitize_file_name( $filename ),
+                'post_content'   => '',
+                'post_status'    => 'inherit'
+            );
+
+            // Create the attachment
+            $attach_id = wp_insert_attachment( $attachment, $file);
+
+            // Include image.php
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+            // Define attachment metadata
+            $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+
+            // Assign metadata to attachment
+            wp_update_attachment_metadata( $attach_id, $attach_data );
+
+            // And finally assign featured image to post
+            
+            return $attach_id;
+            //set_post_thumbnail( $post_id, $attach_id );
+        }
+    }
+    function dsi_set_image_gallery($images){
+        // SET THUMBNAIL TO POST
+        // Add Featured Image to Post
+        
+        $image_ids = array();
+        for($i = 0; $i < count($images); $i++)
+        { 
+            
+            if($images[$i] != null){
+                $image_url        = $images[$i]; // Define the image URL here
+                $image_name       = 'main.png';
+                $upload_dir       = wp_upload_dir(); // Set upload folder
+                $image_data       = file_get_contents($image_url); // Get image data
+                $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
+                $filename         = basename( $unique_file_name ); // Create image file name
     
+                // Check folder permission and define file location
+                if( wp_mkdir_p( $upload_dir['path'] ) ) {
+                    $file = $upload_dir['path'] . '/' . $filename;
+                } else {
+                    $file = $upload_dir['basedir'] . '/' . $filename;
+                }
+    
+                // Create the image  file on the server
+                file_put_contents( $file, $image_data );
+    
+                // Check image file type
+                $wp_filetype = wp_check_filetype( $filename, null );
+    
+                // Set attachment data
+                $attachment = array(
+                    'post_mime_type' => $wp_filetype['type'],
+                    'post_title'     => sanitize_file_name( $filename ),
+                    'post_content'   => '',
+                    'post_status'    => 'inherit'
+                );
+    
+                // Create the attachment
+                $attach_id = wp_insert_attachment( $attachment, $file);
+    
+                // Include image.php
+                require_once(ABSPATH . 'wp-admin/includes/image.php');
+    
+                // Define attachment metadata
+                $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+    
+                // Assign metadata to attachment
+                wp_update_attachment_metadata( $attach_id, $attach_data );
+    
+                // And finally assign featured image to post
+                
+                //set_post_thumbnail( $post_id, $attach_id );
+                array_push($image_ids,$attach_id);
+            }
+
+        }
+        return $image_ids;
+    }
 }
+
+
+
+// Functions
+
+
+
+
 ?>

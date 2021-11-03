@@ -72,11 +72,11 @@ function uploadcsv_files_test(){
                     array('item_group','36'),
                     array('item_subgroup','37'),
                     array('brand','34'),
-                    array('weight','12'),
-                    array('length','14'),
-                    array('width','14'),
-                    array('height','14'),
-                    array('image','27'),
+                    array('weight','18'),
+                    array('length','19'),
+                    array('width','20'),
+                    array('height','21'),
+                    array('image','29'),
                     
                     
                 );
@@ -125,11 +125,12 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
         $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
         
-        if($sample_data[$x-1][0] == 'description'){
+        if($sample_data[$x-1][0] == 'description' || $sample_data[$x-1][0] == 'image'){
             //$sample_csv = 'Webpage Description (html)';
             $desciption = $sample_data[$x-1][0];
-            $sample_csv = substr($sample_csv,0,50) . "......";
+            $sample_csv = substr($sample_csv,0,50) . "...";
         }
+        
         if($sample_data[$x-1][0] == 'name'){
             $name = $sample_data[$x-1][0];
             $name_column = $sample_data[$x-1][1];
@@ -197,11 +198,11 @@ function csv_get_and_send($csv_file,$wc_fields,$sample_data){
     $upload_mapping = array();  
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
-        $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
+        $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]] . "ete";
       
         if($sample_data[$x-1][0] == 'description'){
             //$sample_csv = 'Webpage Description (html)';
-            $sample_csv = substr($sample_csv,0,50) . "......";
+            $sample_csv = substr($sample_csv,0,50) . "...";
         }
         if($sample_data[$x-1][0] == 'name'){
             $name = $sample_data[$x-1][0];
@@ -248,6 +249,7 @@ add_action('wp_ajax_get_field_then_import','get_field_then_import');
 
 function get_field_then_import(){
     header('Content-Type:application/json');
+    $starttime = microtime(true);
 
     //instatiate WC_PRODUCTs
     $prod_inst = new WC_Product();
@@ -274,7 +276,7 @@ function get_field_then_import(){
     
     $update_id = '';
     $products = wc_get_products( array(
-        'sku'=>$sku
+        'sku'=>$sku 
     ) );
     $existing = 0;
     foreach($products as $p){
@@ -340,9 +342,24 @@ function get_field_then_import(){
                 }
                 
             }
-            
+            // $args =[
+            //     'id'=> $update_id,
+            //     'name'=>$_POST['lines'][10],
+            //     'sku'=>$sku,
+            //     'price'=>$price,
+            //     'thumbnail'=>$thumbnail1,
+            //     'thumbnail2'=>$thumbnail2,
+            //     'description'=>$_POST['lines'][16],
+            //     'category'=> $category_id,
+            //     'length'=>$lnt,
+            //     'width'=>$wdt,
+            //     'height'=>'0',
+            //     'weight'=>$_POST['lines'][12],
 
-            $pid = $prd->dsi_wc_product_simple_update([
+            // ];
+
+            // $pid = $prd->dsi_wc_product_simple_update($args);
+            $args =[
                 'id'=> $update_id,
                 'name'=>$_POST['lines'][10],
                 'sku'=>$sku,
@@ -355,8 +372,13 @@ function get_field_then_import(){
                 'width'=>$wdt,
                 'height'=>'0',
                 'weight'=>$_POST['lines'][12],
+            ];
+            global $wpdb;
 
-            ]);
+            $table = $wpdb->prefix. "posts";
+            $prd->update_product_raw_sql($table,$args);
+
+            
         
             $status_message = 'Updated';
         }
@@ -365,27 +387,57 @@ function get_field_then_import(){
         }
     }
     else{
-        $pid = $prd->dsi_wc_product_simple(
-            [
-                'name'=>$_POST['lines'][10],
-                'sku'=>$sku,
-                'price'=>$price,
-                'thumbnail'=>$thumbnail1,
-                'thumbnail2'=>$thumbnail2,
-                'description'=>$_POST['lines'][16],
-                'category'=> $category_id,
-                'length'=>$lnt,
-                'width'=>$wdt,
-                'height'=>'0',
-                'weight'=>$_POST['lines'][12],
-            ]
+
+        // $args = 
+        // [
+        //     'name'=>$_POST['lines'][10],
+        //     'sku'=>$sku,
+        //     'price'=>$price,
+        //     'thumbnail'=>$thumbnail1,
+        //     'thumbnail2'=>$thumbnail2,
+        //     'description'=>$_POST['lines'][16],
+        //     'category'=> $category_id,
+        //     'length'=>$lnt,
+        //     'width'=>$wdt,
+        //     'height'=>'0',
+        //     'weight'=>$_POST['lines'][12],
+        // ];
+
+        // $pid = $prd->dsi_wc_product_simple($args);
+        $images_array = array(
+            $_POST['lines'][24]
         );
+
+        $categories = array(
+            $category_id
+        );
+        $args = 
+        [
+            'name'=>$_POST['lines'][10],
+            'sku'=>$sku,
+            'price'=>$price,
+            'thumbnail'=>$thumbnail1,
+            'images'=>$images_array,
+            'description'=>$_POST['lines'][16],
+            'category'=> $category_id,
+            'length'=>$lnt,
+            'width'=>$wdt,
+            'height'=>'0',
+            'weight'=>$_POST['lines'][12],
+        ];
+        global $wpdb;
+        $table = $wpdb->prefix . "posts";
+        
+         $pid = $prd->insert_product_raw_sql($table,$args);
+        
         $status_message = 'Created';
     }
 
 
 
     //Category Manipulation : Add/EDIT product category on first row only
+    $endtime = microtime(true);
+    $loading_time = ($endtime - $starttime);
     echo json_encode([
         'data'=>[
             'product_id'=> $pid,
@@ -403,7 +455,8 @@ function get_field_then_import(){
         'mark_up_value' => $_POST['mark_up_value'],
         'mark_up_perc' => $percent,
         'price_up'=> $price,
-        'media' => get_attached_media( '', $pid ) 
+        'media' => get_attached_media( '', $pid ) ,
+        'loading_time' => number_format($loading_time,2)
 
     ]);
     exit();
@@ -534,9 +587,12 @@ function get_ajax_script_main_page(){
 
 add_action('wp_ajax_get_field_then_import_idropship',function(){
     header('Content-Type:application/json');
+    $product_id = '';
     $name = $_POST['lines'][3];
+    $type = $_POST['lines'][1];
     $description = $_POST['lines'][8];
     $sku = $_POST['lines'][2];
+    $status = $_POST['lines'][4];
     $regular_price = $_POST['lines'][25];
     $sale_price = $_POST['lines'][24];
     $brand = $_POST['lines'][3];
@@ -544,22 +600,112 @@ add_action('wp_ajax_get_field_then_import_idropship',function(){
     $length = '';
     $width = '';
     $height = '';
-    $image = '';
+    $images = array();
     $category = '';
+
+    // check if exisiting
+    $prd = new DSI_Products();
+    $update_id = '';
+    $products = wc_get_products( array(
+        'sku'=>$sku
+    ) );
+    $existing = 0;
+    foreach($products as $p){
+        $update_id = $p->get_id();
+        $existing = 1;
+    }
+    $status_message = '';
+    // work with categories
     
+    if($existing == 1){ // IF SKU IS 
+        if($_POST['skip_existing_sku_yes']=='false'){
+            if($_POST['upload_images_yes'] == 'true'){
+                //delete_ main image
+                $p = new WC_Product($update_id);
+
+                $attachmentID= $p->get_image_id();
 
 
+                //wp_delete_attachment('34041', true);
 
+                $attachment_path = get_attached_file( $attachmentID); 
+                //Delete attachment from database only, not file
+                $delete_attachment = wp_delete_attachment($attachmentID, true);
+                //Delete attachment file from disk
+                $delete_file = unlink($attachment_path);
+
+                //delete all gallery images
+
+
+                $gallery_image_ids= $p->get_gallery_image_ids();
+
+            }
+            $pid = $prd->dsi_wc_product_simple_update([
+                'id'=> $update_id,
+                'name'=>$name,
+                'sku'=>$sku,
+                'price'=>$regular_price,
+                'sale_price'=>$sale_price,
+                'images'=>$images,
+                'description'=>$description,
+                'category'=> $category,
+                'length'=>$length,
+                'width'=>$length,
+                'height'=>'0',
+                'weight'=>$weight,
+
+            ]);
+            $status_message = 'Updated';
+        }
+        else{
+            $status_message = 'Skipped';
+        }
+    }
+    else{
+        $args = [
+            'name'=>$name,
+            'type' => $type,
+            'sku'=>$sku,
+            'price'=>$regular_price,
+            'sale_price'=>$sale_price,
+            'images'=>$images,
+            'description'=>$description,
+            'category'=> $category,
+            'length'=>$length,
+            'width'=>$width,
+            'height'=>$height,
+            'weight'=>$_POST['lines'][12],
+        ];
+        //$pid = $prd->dsi_wc_product_simple($args);
+
+        $args = [
+            'name'=>$name,
+            'type' => $type,
+            'sku'=>$sku,
+            'price'=>$regular_price,
+            'sale_price'=>$sale_price,
+            'images'=>$images,
+            'description'=>$description,
+            'category'=> $category,
+            'length'=>$length,
+            'width'=>$width,
+            'height'=>$height,
+            'weight'=>$_POST['lines'][12],
+        ];
+
+        // $pid = $prd->dsi_wp_create_post($args);
+        $status_message = 'Created';
+    }
 
     echo json_encode([
         'data'=>[
             'product_id'=> $pid,
-            'sku'=> $_POST['lines'][1],
-            'name'=> $_POST['lines'][3],
-            'price'=> $price,
+            'sku'=> $sku,
+            'name'=> $name,
+            'price'=> $regular_price,
             'category'=>$_POST['lines'][$_POST['selected_category']],
-            'length'=> $dim[0],
-            'width'=> $dim[1].
+            'length'=> $length,
+            'width'=> $width.
             ''
         ],
         'status_message'=>$status_message,

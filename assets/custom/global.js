@@ -80,7 +80,7 @@ var categories = Array();
             output += '<tr >';
             output += '<td class="product-field" field-name="'+ r +'"><b>' + r + '</b></td>';
             output += '<td class="product-col wrap" csv-row-numbers="'+ data.row[r].split('wci_split')[1] + '">' + data.row[r].split('wci_split')[0]+ '['+ data.row[r].split('wci_split')[1]+ ']</td>';
-            output += "<td class='product-values wrap' csv-row-values='" + data.row[r].split('wci_split')[3] + "'>" + jQuery.trim(data.row[r].split('wci_split')[2]) + "</td>";
+            output += "<td style='word-wrap:break-word' class='product-values wrap' csv-row-values='" + data.row[r].split('wci_split')[3] + "'>" + jQuery.trim(data.row[r].split('wci_split')[2]) + "</td>";
             output += '</tr>';
         }
         output += '</tbody>';
@@ -160,7 +160,7 @@ function sends_data_to_ajax(){
     
     var b =1;
     jQuery('#row_holder_start').val(0 * 1);
-    console.log(data_per_lines);
+    //console.log(data_per_lines);
     send_one_by_one_ajax();
 }
 var selected_category_column;
@@ -180,6 +180,7 @@ function send_one_by_one_ajax(){
     aj = jQuery.ajax({
         url:url_,
         type:'POST',
+        start_time:new Date().getTime(),
         data : {
             lines : data_per_lines[jQuery('#row_holder_start').val() *1],
             names : field_names,
@@ -220,13 +221,15 @@ function send_one_by_one_ajax(){
         //     jQuery('#dsi-summary-table').append("<tr class='tr-please-wait'><td colspan='4'><h3>Please Wait while skipping lines</h3></td></tr>");
 
         // }else{
+            t = new Date().getTime() - this.start_time;
+            
             trout+='<tr>';
             trout+='<td>' + e.data.sku + "</td>";
             trout+='<td>' + e.data.name + "</td>";
             trout+='<td>' + e.data.price + "</td>";
-            trout+='<td>' + e.status_message + "</td>";
+            trout+='<td>111' + e.status_message + '('+ new Date().getTime() - this.start_time +' ms)</td>';
             trout+='</tr>';
-            jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td class='res' status='" + e.status_message +"'>" + e.status_message + "</td></tr>");
+            jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td class='res' status='" + e.status_message +"'>" + e.status_message + " (" + e.loading_time +" s/ " + ((t/1000).toFixed(2)) + "s)</td></tr>");
             jQuery('.tr-please-wait').remove();
         // }
         if($dvdn == $dvsr){
