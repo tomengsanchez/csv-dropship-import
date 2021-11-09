@@ -96,7 +96,8 @@ jQuery(document).ready(function(){
                         cache:false,
                         success:function(ajs){
                             // ajs = ajs.replace(/\s/g, '');
-                            jQuery('#csv_ajax_table').append(ajs);
+                            jQuery('#csv_ajax_table').before(ajs);
+                            //jQuery('#csv_ajax_table').append(ajs);
                         }
                     });
                 }

@@ -310,7 +310,7 @@ class DSI_Products extends DSI_Loader{
     /** 
      * This will insert product via WC_Product_Simple_bulk
      * 
-     * @param array @data_per_lines
+     * @param array @data_per_lines 
      */
 
 
@@ -470,7 +470,8 @@ class DSI_Products extends DSI_Loader{
      *  Manipulate Category Add and Create Existing Product
      * 
      */
-    function category_manipulation($cat){
+    function category_manipulation($cat,$parent = ''){
+        //pag wala tong laman wag
         $cat_args = array(
             'hide_empty' => false,
             'name'=>$cat
@@ -479,7 +480,9 @@ class DSI_Products extends DSI_Loader{
         if(count($cats_result) == 0)  {
             wp_insert_category([
                 'taxonomy'=>'product_cat',
-                'cat_name'=>$cat
+                'cat_name'=>$cat,
+                'cat_description' => '',
+                'category_parent' => $parent
             ]);
             
         }
@@ -497,6 +500,31 @@ class DSI_Products extends DSI_Loader{
         $res = get_terms('product_cat',$cat_args);
         return $res[0]->term_id;
     
+    }
+    /** Insert Category for nested values 
+     *  @param string $category category strings from a csv value format like 'default\child1\child2\child3,default\child1\child2\child3,
+    */
+    function category_manipulation_nested($category){
+        
+        //remove '/'
+        $categories = array();
+        $processed_cat = explode(',',$category); // removed the ','
+        foreach($processed_cat as $cat){
+            $sliced_cat = explode('/',$cat); // removed the '/'
+            $parent = '';
+            //ar_to_pre($sliced_cat);
+            for($x =0 ;$x < count($sliced_cat) ; $x++){
+                if($x >0)
+                    $parent = $this->category_manipulation($sliced_cat[$x-1]);
+                $categ_id =  $this->category_manipulation($sliced_cat[$x],$parent);
+                array_push($categories,$categ_id);
+            }
+        }
+        // ','
+        // ','
+        return $categories;
+        
+        
     }
 
     /** 
@@ -574,7 +602,13 @@ class DSI_Products extends DSI_Loader{
         $product_id = $this->con->insert_id;
         $post_id = $product_id;
         //Upate the taxonomy
-        wp_set_object_terms( $post_id, 'simple', 'product_type' );
+        if(!empty($args['product_type'])){
+            wp_set_object_terms( $post_id, $args['product_type'], 'product_type' );
+        }
+        else{
+            wp_set_object_terms( $post_id, 'simple', 'product_type' );
+        }
+        
         // Update the category
         
         $this->dsi_product_update_category($product_id,$args['category']);
@@ -622,24 +656,102 @@ class DSI_Products extends DSI_Loader{
      */
     public function update_product_raw_sql($table,$args){
         
+        global $wpdb;
         $product_id = $args['id'];
+        $this->connect_db();
+        //print_r($args);
+        
+        $post_name = sanitize_title($args['name']);
+
+        $sqlSelectSlug = "
+            SELECT * FROM " . $wpdb->prefix. "posts
+            WHERE post_name = '" . $post_name . "'
+        ";
+        
+        
+        
+        $r = $this->con->query($sqlSelectSlug);
+        //echo $r->num_rows;
+        if($r->num_rows > 0){
+            $post_name = $post_name . "-" . ($r->num_rows + 1);
+        }
+
         $sqlUpdate = "
             UPDATE " . $table . " 
             SET 
-            post_modified,
-            post_modified_gmt,
-            post_content,
-            post_title,
-            post_excerpt,
-            post_status,
-            post_name,
-            post_type,
-            to_ping,
-            pinged,
-            post_content_filtered,
-            post_parent,
-            post_mime_type
+            post_modified = '" .  date('Y-m-d H:i:s') . "',
+            post_modified_gmt= '" .  date('Y-m-d H:i:s') . "',
+            post_content = '" .  $args['description'] . "',
+            post_title = '" .  $args['name']  . "',
+            post_excerpt = '" .  $args['name']  . "',
+            post_status = 'publish',
+            post_name = '" .  $post_name  . "',
+            post_type = 'product',
+            to_ping = '',
+            pinged = '',
+            post_content_filtered = '',
+            post_parent = 0,
+            post_mime_type = ''
+
+            WHERE
+
+            ID = '" . $product_id . "'
         ";
+        //echo $sqlUpdate;
+        
+        //echo $sqlUpdate;
+
+        $this->con->query($sqlUpdate);
+
+        $post_id = $product_id;
+        //Upate the taxonomy
+        if(!empty($args['product_type'])){
+            wp_set_object_terms( $post_id, $args['product_type'], 'product_type' );
+        }
+        else{
+            wp_set_object_terms( $post_id, 'simple', 'product_type' );
+        }    
+        
+        // Update the category
+        
+        $this->dsi_product_update_category($product_id,$args['category']);
+
+        //insert thumbnail
+        $thumbnail_id = $this->dsi_set_thumbnail($args['thumbnail']);
+        $this->dsi_product_update_meta( $post_id, '_thumbnail_id', $thumbnail_id );
+
+        //insert gallery images
+
+        $images = $this->dsi_set_image_gallery($args['images']);
+        $images = implode(",",$images);
+        
+        $this->dsi_product_update_meta( $post_id, '_product_image_gallery', $images );
+            
+        $this->dsi_product_update_meta($product_id,'_sku',$args['sku']);
+        $this->dsi_product_update_meta($product_id,'_price',$args['price']);
+        
+        $this->dsi_product_update_meta( $post_id, '_visibility', 'visible' );
+        $this->dsi_product_update_meta( $post_id, '_stock_status', 'instock');
+        $this->dsi_product_update_meta( $post_id, 'total_sales', '0' );
+        $this->dsi_product_update_meta( $post_id, '_downloadable', 'no' );
+        $this->dsi_product_update_meta( $post_id, '_virtual', 'no' );
+        $this->dsi_product_update_meta( $post_id, '_regular_price', $args['price'] );
+        $this->dsi_product_update_meta( $post_id, '_sale_price', '');
+        $this->dsi_product_update_meta( $post_id, '_purchase_note', '' );
+        $this->dsi_product_update_meta( $post_id, '_featured', 'no' );
+        $this->dsi_product_update_meta( $post_id, 'product_shipping_class', '');
+        $this->dsi_product_update_meta( $post_id, '_weight', $args['weight'] );
+        $this->dsi_product_update_meta( $post_id, '_length', $args['length'] );
+        $this->dsi_product_update_meta( $post_id, '_width', $args['width'] );
+        $this->dsi_product_update_meta( $post_id, '_height', 0 );
+        $this->dsi_product_update_meta( $post_id, '_product_attributes', array() );
+        $this->dsi_product_update_meta( $post_id, 'sale_price_dates_from', '' );
+        $this->dsi_product_update_meta( $post_id, 'sale_price_dates_to', '' );
+        $this->dsi_product_update_meta( $post_id, '_price', $args['price'] );
+        $this->dsi_product_update_meta( $post_id, '_sold_individually', '' );
+        $this->dsi_product_update_meta( $post_id, '_manage_stock', 'no' );
+        $this->dsi_product_update_meta( $post_id, '_backorders', 'no' );
+        $this->dsi_product_update_meta( $post_id, '_stock', '' );
     }
     /**
      * Function to udpate the meta
@@ -657,11 +769,13 @@ class DSI_Products extends DSI_Loader{
         // else - update postmeta with new filter
         $sqlSelectMeta = "
             SELECT * FROM " . $table . " 
-            WHERE product_id = '" . $product_id. "'
-            AMD meta_key = '" . $metakey . "'
+            WHERE post_id = '" . $product_id. "'
+            AND meta_key = '" . $metakey . "'
             
         ";
+        
         $res = $this->con->query($sqlSelectMeta);
+        
         if($res->num_rows > 0){
             $sqlUpdateMeta = "
                 UPDATE " . $table . " 
@@ -705,7 +819,7 @@ class DSI_Products extends DSI_Loader{
     function dsi_set_thumbnail($thumbnail){
         // SET THUMBNAIL TO POST
         // Add Featured Image to Post
-        if($thumbnail != null){
+        if(!empty($thumbnail)){
             $image_url        = $thumbnail; // Define the image URL here
             $image_name       = 'main.png';
             $upload_dir       = wp_upload_dir(); // Set upload folder
@@ -757,10 +871,11 @@ class DSI_Products extends DSI_Loader{
         // Add Featured Image to Post
         
         $image_ids = array();
+        
         for($i = 0; $i < count($images); $i++)
         { 
             
-            if($images[$i] != null){
+            if(!empty($images[$i])){
                 $image_url        = $images[$i]; // Define the image URL here
                 $image_name       = 'main.png';
                 $upload_dir       = wp_upload_dir(); // Set upload folder
@@ -809,6 +924,167 @@ class DSI_Products extends DSI_Loader{
 
         }
         return $image_ids;
+    }
+    /**
+     * Get Variation Parent by looking at its sku if the explode('0',is in array of $_POST]['variation_parent_'])
+     * 
+     * @param string sku 
+     * @param string variation_parents_
+     * @return string @parent_id
+     */
+    function process_variation_parent($sku ,$variation_parents,$args=array()){
+        $parent_variable_product = '';
+        $sku_split = explode('-',$sku);
+        foreach($variation_parents as $pv){
+            if($sku_split[0] == $pv){
+                $parent_variable_product = $pv. "-MAIN";
+            }
+        }
+        return $parent_variable_product;
+    }
+    function insert_new_variation_parent($args = array()){
+        global $wpdb;
+            $this->connect_db();
+        //return $args;
+        $name = $args['name']. '-MAIN';
+        $sku = $args['sku'] . "-MAIN";
+        $categories = $args['category'];
+        $thumbnail1 = $args['thumbnail1'];
+        $images = $args['images'];
+        $type = 'type';
+        
+        if($this->get_variation_parent()){
+            $args_new = [
+                'name'=>$name,
+                'type' => $type,
+                'sku'=>$sku,
+                'price'=>$regular_price,
+                'sale_price'=>$sale_price,
+                'images'=>$images,
+                'thumbnail'=>$thumbnail1,
+                'category'=> $categories,
+                'length'=>$length,
+                'width'=>$width,
+                'height'=>$height,
+                'weight'=>$weight,
+                'product_type' => $product_type
+            ];
+
+            //$dsidb = new DSI_Db();
+
+            //check slug
+            $post_name = sanitize_title($args_new['name']);
+
+            $sqlSelectSlug = "
+                SELECT * FROM " . $wpdb->prefix. "posts
+                WHERE post_name = '" . $post_name . "'
+            ";
+
+            
+            
+            $r = $this->con->query($sqlSelectSlug);
+            if($r->num_rows > 0){
+                $post_name = $post_name . "-" . ($r->num_rows + 1);
+            }
+            
+            // insert to post
+
+            $sqlInsert = "
+                INSERT INTO " . $wpdb->prefix."posts
+                (
+                    post_author,
+                    post_date,
+                    post_date_gmt,
+                    post_modified,
+                    post_modified_gmt,
+                    post_content,
+                    post_title,
+                    post_excerpt,
+                    post_status,
+                    post_name,
+                    post_type,
+                    to_ping,
+                    pinged,
+                    post_content_filtered,
+                    post_parent,
+                    post_mime_type
+
+                )
+                VALUES
+                (
+                    '" . get_current_user_id(). "', /*post_author*/
+                    '" .  date('Y-m-d H:i:s') . "',/*post_date*/
+                    '" .  date('Y-m-d H:i:s') . "', /*post_date_gmt*/
+                    '" .  date('Y-m-d H:i:s') . "', /*post_modified*/
+                    '" .  date('Y-m-d H:i:s') . "',/*post_modified_gmt*/
+                    '" . $args_new['description'] . "',/*post_content*/
+                    '" . $args['name'] . "', /*post_title*/
+                    '', /*post_author*/
+                    'publish', /*post_status*/
+                    '" . $post_name . "', /*post_name*/
+                    'product', /*post_type*/
+                    ' ', /*to_ping*/
+                    ' ', /*pinged*/
+                    ' ', /*post_content_filtered*/
+                    0, /*post_parent*/
+                    ' ' /*post_mime_type*/
+                )
+            ";
+            $this->con->query($sqlInsert);
+            $product_id = $this->con->insert_id;
+            $post_id = $product_id;
+            //Upate the taxonomy
+            
+            wp_set_object_terms( $post_id, 'variable', 'product_type' );
+            
+            
+            // Update the category
+            
+            $this->dsi_product_update_category($product_id,$args_new['category']);
+
+            //insert thumbnail
+            $thumbnail_id = $this->dsi_set_thumbnail($args_new['thumbnail']);
+            $this->dsi_product_update_meta( $post_id, '_thumbnail_id', $thumbnail_id );
+
+            //insert gallery images
+
+            $images = $this->dsi_set_image_gallery($args_new['images']);
+            $images = implode(",",$images);
+            $this->dsi_product_update_meta( $post_id, '_product_image_gallery', $images );
+                
+            $this->dsi_product_update_meta($product_id,'_sku',$args_new['sku']);
+            $this->dsi_product_update_meta($product_id,'_price',$args_new['price']);
+            
+            $this->dsi_product_update_meta( $post_id, '_visibility', 'visible' );
+            $this->dsi_product_update_meta( $post_id, '_stock_status', 'instock');
+            $this->dsi_product_update_meta( $post_id, 'total_sales', '0' );
+            $this->dsi_product_update_meta( $post_id, '_downloadable', 'no' );
+            $this->dsi_product_update_meta( $post_id, '_virtual', 'no' );
+            $this->dsi_product_update_meta( $post_id, '_regular_price', $args_new['price'] );
+            $this->dsi_product_update_meta( $post_id, '_sale_price', '');
+            $this->dsi_product_update_meta( $post_id, '_purchase_note', '' );
+            $this->dsi_product_update_meta( $post_id, '_featured', 'no' );
+            $this->dsi_product_update_meta( $post_id, 'product_shipping_class', '');
+            $this->dsi_product_update_meta( $post_id, '_weight', $args_new['weight'] );
+            $this->dsi_product_update_meta( $post_id, '_length', $args_new['length'] );
+            $this->dsi_product_update_meta( $post_id, '_width', $args_new['width'] );
+            $this->dsi_product_update_meta( $post_id, '_height', 0 );
+            $this->dsi_product_update_meta( $post_id, '_product_attributes', array() );
+            $this->dsi_product_update_meta( $post_id, 'sale_price_dates_from', '' );
+            $this->dsi_product_update_meta( $post_id, 'sale_price_dates_to', '' );
+            $this->dsi_product_update_meta( $post_id, '_price', $args_new['price'] );
+            $this->dsi_product_update_meta( $post_id, '_sold_individually', '' );
+            $this->dsi_product_update_meta( $post_id, '_manage_stock', 'no' );
+            $this->dsi_product_update_meta( $post_id, '_backorders', 'no' );
+            $this->dsi_product_update_meta( $post_id, '_stock', '' );    
+        }
+        
+        //$this->insert_product_raw_sql($table, $args_new);
+        return $product_id;
+    }
+    function get_variation_parent(){
+        
+        return false;
     }
 }
 

@@ -1,6 +1,7 @@
 <?php 
 /** main Page - /admin.php?page=dropship-import-page */
 
+use Automattic\WooCommerce\Admin\API\Products;
 
 ?>
 
@@ -61,27 +62,62 @@
 </fieldset>
 
 <hr>
-    <?php 
-        global $wpdb;
-        $tdb = new DSI_Db();
-        $post_name = '10 ml Lavender Essential Oil';
+    <?php   
+    $parent_title = '';
+    $names = array(
+        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Single Size',
+        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Double Size',
+        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover King Size',
+        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover King Single',
+        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Queen Size'
+    );
+    $names = array(
+        '3-5 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes',
+        '5-7 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes'
+    );
 
-        $sqlSelectSlug = "
-            SELECT * FROM " . $wpdb->prefix. "posts
-            WHERE post_name = '" . sanitize_title($post_name) . "'
-        ";
+    $names = [
+        '4x1M Inflatable Air Track Mat Tumbling Pump Floor Home Gymnastics Gym in Red',
+        '5x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
+        '5x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
+        '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
+        '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics'
 
-        
-        
-        $r = $tdb->con->query($sqlSelectSlug);
-        if($r->num_rows > 1){
-            $post_name = $post_name . "-" . ($r->num_rows + 1);
+    ];
+    
+    
+    $skus = array(
+        'EE1501',
+        'EE1501-D',
+        'EE1501-K',
+        'EE1501-KS',
+        'EE1501-Q'
+    );
+    
+    $x = 'DreamZ Fitted Wa
+    terproof Mattress Protector with Bamboo Fibre Cover Single Size';
+
+    $titles = array();
+    $collected_titles = array();
+    foreach($names as $n){
+        $namesexp = explode(' ',$n);
+        array_push($titles,$namesexp);
+        foreach($namesexp as $nexp){
+            array_push($collected_titles,$nexp);
         }
-        
-        echo $post_name;
-        
-        
-        
+    }
+    
+    $count_arry = array_count_values($collected_titles);
+    
+    ar_to_pre($count_arry);
+
+    foreach($count_arry as $k =>  $ca){
+        if($ca == count($names))
+            $parent_title .= $k . " ";
+    }
+
+    array_intersect($collected_titles);
+    echo $parent_title;
     ?>
 
 <div class='dsi-row' >
@@ -94,7 +130,7 @@
     <div class="dsi-col" style='min-height:400px'>
     <h2 style='padding-left:20px'>IMPORT STATUS</h2>
         <?php 
-                        
+
         ?>
         <script >
             jQuery(document).ready(function(){

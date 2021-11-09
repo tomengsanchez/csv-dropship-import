@@ -53,12 +53,9 @@ function uploadcsv_files_test(){
                     array('image_2','24'),
                     array('Family','3'),
                     array('Category','31'),
-                    
                 );
                 csv_get_and_send($csv_file,$wc_fields,$sample_data);
             }
-
-            
             if($_POST['dropship_company'] == 'idropship'){
                 $sample_data = array(
                     array('name','3'),
@@ -77,8 +74,6 @@ function uploadcsv_files_test(){
                     array('width','20'),
                     array('height','21'),
                     array('image','29'),
-                    
-                    
                 );
                 get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data);
             }
@@ -114,12 +109,25 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
 
     $prd->read_csv_lines($fo);
     $lns = $prd->data_per_lines;
-    
+
+    $variation_parents = array();
     $data_lines = array();
+    
     for($l = 1; $l < count($lns) ; $l++){
         array_push($data_lines,$lns[$l-1]);
+        array_push($variation_parents,$lns[$l-1][2]);
     }
     //ar_to_pre($data_lines);
+
+    //Play with Collected SKU then convert them into    \
+    $variation_parents_processed = array();
+    foreach($variation_parents as $vp){
+        $sku_split = explode('-',$vp);
+        if(count($sku_split) > 1){
+            array_push($variation_parents_processed,$sku_split[0]);
+        }
+        
+    }
     $upload_mapping = array();  
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
@@ -130,7 +138,6 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
             $desciption = $sample_data[$x-1][0];
             $sample_csv = substr($sample_csv,0,50) . "...";
         }
-        
         if($sample_data[$x-1][0] == 'name'){
             $name = $sample_data[$x-1][0];
             $name_column = $sample_data[$x-1][1];
@@ -138,7 +145,6 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
         }
         if($sample_data[$x-1][0] == 'name'){
             $desciption = $sample_data[$x-1][0];
-            
         }
         
         
@@ -160,7 +166,8 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
         'script'=> $script,
         'data_per_lines'=> $data_lines,
         'categories'=>$cats,
-        'valid' => in_array($name_heading,$prd->valid_name_heading)
+        'valid' => in_array($name_heading,$prd->valid_name_heading),
+        'variation_parents' => $variation_parents_processed
         ]
     );
     exit();
@@ -198,7 +205,7 @@ function csv_get_and_send($csv_file,$wc_fields,$sample_data){
     $upload_mapping = array();  
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
-        $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]] . "ete";
+        $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]] . "";
       
         if($sample_data[$x-1][0] == 'description'){
             //$sample_csv = 'Webpage Description (html)';
@@ -359,19 +366,27 @@ function get_field_then_import(){
             // ];
 
             // $pid = $prd->dsi_wc_product_simple_update($args);
+            $images_array = array(
+                $thumbnail2
+            );
+    
+            $categories = array(
+                $category_id
+            );
             $args =[
                 'id'=> $update_id,
                 'name'=>$_POST['lines'][10],
                 'sku'=>$sku,
                 'price'=>$price,
                 'thumbnail'=>$thumbnail1,
-                'thumbnail2'=>$thumbnail2,
+                'images'=> $images_array,
                 'description'=>$_POST['lines'][16],
-                'category'=> $category_id,
+                'category'=> $categories,
                 'length'=>$lnt,
                 'width'=>$wdt,
                 'height'=>'0',
                 'weight'=>$_POST['lines'][12],
+                'product_type', 'simple'
             ];
             global $wpdb;
 
@@ -405,7 +420,7 @@ function get_field_then_import(){
 
         // $pid = $prd->dsi_wc_product_simple($args);
         $images_array = array(
-            $_POST['lines'][24]
+            $thumbnail2
         );
 
         $categories = array(
@@ -419,11 +434,12 @@ function get_field_then_import(){
             'thumbnail'=>$thumbnail1,
             'images'=>$images_array,
             'description'=>$_POST['lines'][16],
-            'category'=> $category_id,
+            'category'=> $categories,
             'length'=>$lnt,
             'width'=>$wdt,
             'height'=>'0',
             'weight'=>$_POST['lines'][12],
+            'product_type', 'simple'
         ];
         global $wpdb;
         $table = $wpdb->prefix . "posts";
@@ -516,6 +532,7 @@ function get_ajax_script_main_page(){
         jQuery(document).ready(function(){
             jQuery('#start_import').click(function(e){
                 e.preventDefault();
+                
                 //selected_category_column = jQuery(this).parent().siblings('td.td_select').children('select.select_category_column').val();
                 mark_up_price_base = jQuery('select.price_mark_up_select').val();
                 mark_up_price_base = jQuery('select.price_mark_up_select').val();
@@ -565,8 +582,8 @@ function get_ajax_script_main_page(){
                         }
                     }
                 }
-
                 
+                x =0;
                 
             }).addClass('button').animate('10000');
             
@@ -584,7 +601,9 @@ function get_ajax_script_main_page(){
     <?php 
     exit();
 }
-
+/**
+ * 
+ */
 add_action('wp_ajax_get_field_then_import_idropship',function(){
     header('Content-Type:application/json');
     $product_id = '';
@@ -595,17 +614,44 @@ add_action('wp_ajax_get_field_then_import_idropship',function(){
     $status = $_POST['lines'][4];
     $regular_price = $_POST['lines'][25];
     $sale_price = $_POST['lines'][24];
-    $brand = $_POST['lines'][3];
-    $weight = '';
-    $length = '';
-    $width = '';
-    $height = '';
-    $images = array();
-    $category = '';
+    $brand = $_POST['lines'][34];
+    $weight = $_POST['lines'][18];
+    $length = $_POST['lines'][19];
+    $width = $_POST['lines'][20];
+    $height = $_POST['lines'][21];
+    $image = $_POST['lines'][29];
+    $category = $_POST['lines'][26];
+    $thumbnail1 = '';
 
-    // check if exisiting
+    $product_type = 'simple';
+    
+
+    $image_array = explode(',',$image);
+    $xc = 0;
+    if($_POST['upload_images_yes'] == 'true'){
+        foreach($image_array as $im){
+            array_push($images,$im);
+        $xc++;
+        }
+    }
+    else{
+        // $thumbnail1 = null;
+        // $thumbnail2 = null;
+    }
+
     $prd = new DSI_Products();
     $update_id = '';
+
+    //product type
+    $sku_0 = explode('-',$sku)[0];
+    
+    if(in_array($sku_0, $_POST['variation_parents_'])){
+        $product_type = 'variable';
+    }
+    // work with categories
+    $categories = $prd->category_manipulation_nested($category);
+    $images = array();
+    $test = $sku;
     $products = wc_get_products( array(
         'sku'=>$sku
     ) );
@@ -614,89 +660,134 @@ add_action('wp_ajax_get_field_then_import_idropship',function(){
         $update_id = $p->get_id();
         $existing = 1;
     }
-    $status_message = '';
-    // work with categories
+
+    if($existing == 1){//if existing
+        /** Update */
+        //work on category
+        //work on variation
+        //insert_product - 
+    } // IF SKU IS 
+    else { // existing no
+        /** insert */
+        //work on variation
+        //insert_product - 
+    }
+    //else
+        
+
+
+
+
+    // check if exisiting
+
+
     
-    if($existing == 1){ // IF SKU IS 
-        if($_POST['skip_existing_sku_yes']=='false'){
-            if($_POST['upload_images_yes'] == 'true'){
-                //delete_ main image
-                $p = new WC_Product($update_id);
+    // $status_message = '';
+    // // work with product type and variation
+    
+    
 
-                $attachmentID= $p->get_image_id();
+    // $xc = 0;
+    // if($_POST['upload_images_yes'] == 'true'){
+    //     foreach($image_array as $im){
+    //         array_push($images,$im);
+    //     $xc++;
+    // }
+    // }
+    // else{
+    //     // $thumbnail1 = null;
+    //     // $thumbnail2 = null;
+    // }
 
+    // $test = $prd->process_variation_parent($sku,$_POST['variation_parents_'],$_POST['lines']);
 
-                //wp_delete_attachment('34041', true);
+    // if($existing == 1){ // IF SKU IS 
+    //     if($_POST['skip_existing_sku_yes']=='false'){
+    //         if($_POST['upload_images_yes'] == 'true'){
+    //             //delete_ main image
+    //             $p = new WC_Product($update_id);
+    //             $attachmentID= $p->get_image_id();
+    //             //wp_delete_attachment('34041', true);
+    //             $attachment_path = get_attached_file( $attachmentID); 
+    //             //Delete attachment from database only, not file
+    //             $delete_attachment = wp_delete_attachment($attachmentID, true);
+    //             //Delete attachment file from disk
+    //             $delete_file = unlink($attachment_path);
+    //             //delete all gallery images
+    //             $gallery_image_ids= $p->get_gallery_image_ids();
 
-                $attachment_path = get_attached_file( $attachmentID); 
-                //Delete attachment from database only, not file
-                $delete_attachment = wp_delete_attachment($attachmentID, true);
-                //Delete attachment file from disk
-                $delete_file = unlink($attachment_path);
+    //         }
+    //         $args = [
+    //             'id'=> $update_id,
+    //             'name'=>$name,
+    //             'sku'=>$sku,
+    //             'price'=>$regular_price,
+    //             'sale_price'=>$sale_price,
+    //             'images'=>$images,
+    //             'thumbnail'=> $thumbnail1,
+    //             'description'=>$description,
+    //             'category'=> $categories,
+    //             'length'=>$length,
+    //             'width'=>$length,
+    //             'height'=>'0',
+    //             'weight'=>$weight,
+    //             'product_type' => $product_type
 
-                //delete all gallery images
+    //         ];
+    //         global $wpdb;
 
+    //         $table = $wpdb->prefix. "posts";
+    //         $prd->update_product_raw_sql($table,$args);
 
-                $gallery_image_ids= $p->get_gallery_image_ids();
+    //         $status_message = 'Updated';
+    //     }
+    //     else{
+    //         $status_message = 'Skipped';
+    //     }
+    // }
+    // else{
+    //     // $args = [
+    //     //     'name'=>$name,
+    //     //     'type' => $type,
+    //     //     'sku'=>$sku,
+    //     //     'price'=>$regular_price,
+    //     //     'sale_price'=>$sale_price,
+    //     //     'images'=>$images,
+    //     //     'description'=>$description,
+    //     //     'category'=> $category,
+    //     //     'length'=>$length,
+    //     //     'width'=>$width,
+    //     //     'height'=>$height,
+    //     //     'weight'=>$_POST['lines'][12],
+    //     // ];
+    //     // //$pid = $prd->dsi_wc_product_simple($args);
+    //     $thumbnail1 = $images[0];
+        
+    //     $args = [
+    //         'name'=>$name,
+    //         'type' => $type,
+    //         'sku'=>$sku,
+    //         'post_parent'=>$parent_id,
+    //         'price'=>$regular_price,
+    //         'sale_price'=>$sale_price,
+    //         'images'=>$images,
+    //         'description'=>$description,
+    //         'thumbnail'=>$thumbnail1,
+    //         'category'=> $categories,
+    //         'length'=>$length,
+    //         'width'=>$width,
+    //         'height'=>$height,
+    //         'weight'=>$weight,
+    //         'product_type' => $product_type
+    //     ];
 
-            }
-            $pid = $prd->dsi_wc_product_simple_update([
-                'id'=> $update_id,
-                'name'=>$name,
-                'sku'=>$sku,
-                'price'=>$regular_price,
-                'sale_price'=>$sale_price,
-                'images'=>$images,
-                'description'=>$description,
-                'category'=> $category,
-                'length'=>$length,
-                'width'=>$length,
-                'height'=>'0',
-                'weight'=>$weight,
+    //     global $wpdb;
+    //     $table = $wpdb->prefix . "posts";
+    //     //$pid = $prd->insert_product_raw_sql($table,$args);
 
-            ]);
-            $status_message = 'Updated';
-        }
-        else{
-            $status_message = 'Skipped';
-        }
-    }
-    else{
-        $args = [
-            'name'=>$name,
-            'type' => $type,
-            'sku'=>$sku,
-            'price'=>$regular_price,
-            'sale_price'=>$sale_price,
-            'images'=>$images,
-            'description'=>$description,
-            'category'=> $category,
-            'length'=>$length,
-            'width'=>$width,
-            'height'=>$height,
-            'weight'=>$_POST['lines'][12],
-        ];
-        //$pid = $prd->dsi_wc_product_simple($args);
-
-        $args = [
-            'name'=>$name,
-            'type' => $type,
-            'sku'=>$sku,
-            'price'=>$regular_price,
-            'sale_price'=>$sale_price,
-            'images'=>$images,
-            'description'=>$description,
-            'category'=> $category,
-            'length'=>$length,
-            'width'=>$width,
-            'height'=>$height,
-            'weight'=>$_POST['lines'][12],
-        ];
-
-        // $pid = $prd->dsi_wp_create_post($args);
-        $status_message = 'Created';
-    }
-
+    //     $status_message = 'Created';
+    // }
+    
     echo json_encode([
         'data'=>[
             'product_id'=> $pid,
@@ -714,8 +805,10 @@ add_action('wp_ajax_get_field_then_import_idropship',function(){
         'mark_up_value' => $_POST['mark_up_value'],
         'mark_up_perc' => $percent,
         'price_up'=> $price,
-        'media' => get_attached_media( '', $pid ) 
-
+        'media' => get_attached_media( '', $pid ),
+        'variation_parents' => $_POST['variation_parents_'],
+        'product_type' => $product_type,
+        'test_funtion' => $test
     ]);
     exit();
 });

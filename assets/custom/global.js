@@ -6,10 +6,12 @@ jQuery(document).ready(function(){
 }
 );
 var data_per_lines = Array();
+var variation_parents = Array();
 var categories = Array();
 
  function inline_form_table_json(data,container){
     jQuery('.select_category').selectmenu();
+    variation_parents = data.variation_parents;    
     data_per_lines = data.data_per_lines;
     
     if(data_per_lines && data.valid == true){
@@ -166,7 +168,7 @@ function sends_data_to_ajax(){
 var selected_category_column;
 function send_one_by_one_ajax(){
     
-    
+    variation_parents_ = variation_parents;
 
     if(jQuery('#dropship_company').val()== 'aw-dropship'){
         url_ = locsData.admin_url+'admin-ajax.php?action=get_field_then_import';
@@ -190,7 +192,8 @@ function send_one_by_one_ajax(){
             mark_up_base: mark_up_base_,
             mark_up_value: mark_up_value_,
             upload_images_yes: upload_images_,
-            skip_existing_sku_yes : skip_existing_sku_
+            skip_existing_sku_yes : skip_existing_sku_,
+            variation_parents_ :variation_parents
             
         
         }
@@ -199,10 +202,12 @@ function send_one_by_one_ajax(){
         finish = jQuery('#row_holder_finish').val() *1;
         if(start >= (finish-1)){
             //jQuery('#row_holder_start').val(0 * 1);
+            
         }
         else{
             jQuery('#row_holder_start').val((jQuery('#row_holder_start').val() *1)+1); 
             send_one_by_one_ajax();
+            //alert(data_per_lines[(jQuery('#row_holder_start').val() *1)+1]);
             var imported_files = 0;
         }
         imported_files = jQuery('.import_files').html();
