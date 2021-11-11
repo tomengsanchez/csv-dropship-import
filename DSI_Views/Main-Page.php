@@ -41,7 +41,7 @@ use Automattic\WooCommerce\Admin\API\Products;
                         <option selected value='idropship'>i Dropship</option>
                     </select>
                 </td>
-            
+
                 <td>
                     <label for="csv_file">Select CSV File</label>
                 </td>
@@ -63,7 +63,11 @@ use Automattic\WooCommerce\Admin\API\Products;
 
 <hr>
     <?php   
+    // Objectives ...Remove the attribute from the each names to make the parent_title.
+    // Use these 3 sample scenarios of names
+    // Parent for 1. 'DreamZ Fitted Waterproof Mattres Protectr with Ramboo Filbre Cover'
     $parent_title = '';
+
     $names = array(
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Single Size',
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Double Size',
@@ -71,20 +75,19 @@ use Automattic\WooCommerce\Admin\API\Products;
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover King Single',
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Queen Size'
     );
-    $names = array(
+    // Parent  for 2. 'Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Cord Globes'
+    $names1 = array(
         '3-5 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes',
         '5-7 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes'
     );
-
-    $names = [
+    // Parent  for 2. 'Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics'
+    $names = [  
         '4x1M Inflatable Air Track Mat Tumbling Pump Floor Home Gymnastics Gym in Red',
         '5x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
         '5x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
         '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
         '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics'
-
     ];
-    
     
     $skus = array(
         'EE1501',
@@ -93,14 +96,16 @@ use Automattic\WooCommerce\Admin\API\Products;
         'EE1501-KS',
         'EE1501-Q'
     );
-    
-    $x = 'DreamZ Fitted Wa
-    terproof Mattress Protector with Bamboo Fibre Cover Single Size';
+
+    $x = 'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Single Size';
+
 
     $titles = array();
     $collected_titles = array();
+    $sliced_word = array();    
     foreach($names as $n){
         $namesexp = explode(' ',$n);
+        array_push($sliced_word, $namesexp);
         array_push($titles,$namesexp);
         foreach($namesexp as $nexp){
             array_push($collected_titles,$nexp);
@@ -108,16 +113,72 @@ use Automattic\WooCommerce\Admin\API\Products;
     }
     
     $count_arry = array_count_values($collected_titles);
-    
-    ar_to_pre($count_arry);
+    // echo "Collected Array <br>";
+    // ar_to_pre($names);
+    // echo "<hr bgcolor='red'>";
+    // echo "Sliced Each Word <br>";
+    // ar_to_pre($sliced_word);
+    // echo "<hr>";
+    // echo "Collected Titles <br>";
+    // ar_to_pre($collected_titles);
+    // echo "<hr>";
+    // echo "Got the frequency each word <br>";
+    // ar_to_pre($count_arry);
+    // echo "<hr>";
 
     foreach($count_arry as $k =>  $ca){
-        if($ca == count($names))
+        if($ca >= (count($names)))
             $parent_title .= $k . " ";
     }
+    $parent_title = rtrim($parent_title);
+    echo "Collected All the Frequency then Compared to array_count <br>";
 
-    array_intersect($collected_titles);
-    echo $parent_title;
+    echo "<b>" . $parent_title . "</b>";
+    echo "<hr>";
+    
+    echo "compare each word of the title then compare it to each of the sliced word then store its order<br>";
+    //echo $parent_title;
+    $sliced_title = explode(' ',$parent_title);
+
+    $sample_sliced = array(
+        '6x1M',
+        'Air',
+        'Track',
+        'Inflatable',
+        'Mat',
+        'Airtrack',
+        'Tumbling',
+        'Electric',
+        'Air',
+        'Pump',
+        'Gymnastics'
+    );
+
+    ar_to_pre($sliced_title);
+    echo "<hr>";
+    $arctr = 0;
+    
+    
+    //ar_to_pre($sliced_word);
+    $array1 = array();
+    $parent_final_title = array();
+    //ar_to_pre($sliced_word);
+    foreach($sliced_word as $sw){
+
+        for($s = 0; $s < count($sw);$s++){
+            $current = current($sw);
+            if(in_array($current,$sliced_title)){
+                echo current($sw) ."-" . $s. "|";
+            }
+            
+            next($sw);
+        }
+        echo "<br>";
+    }
+
+    $ar_counter = array_count_values($parent_final_title);
+    
+    echo "<hr>";
     ?>
 
 <div class='dsi-row' >
@@ -130,12 +191,14 @@ use Automattic\WooCommerce\Admin\API\Products;
     <div class="dsi-col" style='min-height:400px'>
     <h2 style='padding-left:20px'>IMPORT STATUS</h2>
         <?php 
-
+            
         ?>
         <script >
+            
             jQuery(document).ready(function(){
                 jQuery( "#progressbar" ).progressbar();
-            });
+            }); 
+            
             jQuery('.progress').change(function(){
                 alert(1);
             });

@@ -473,7 +473,6 @@ function get_field_then_import(){
         'price_up'=> $price,
         'media' => get_attached_media( '', $pid ) ,
         'loading_time' => number_format($loading_time,2)
-
     ]);
     exit();
 }
