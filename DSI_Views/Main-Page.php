@@ -98,7 +98,7 @@ use Automattic\WooCommerce\Admin\API\Products;
     );
 
     $x = 'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Single Size';
-
+    
 
     $titles = array();
     $collected_titles = array();
@@ -113,18 +113,6 @@ use Automattic\WooCommerce\Admin\API\Products;
     }
     
     $count_arry = array_count_values($collected_titles);
-    // echo "Collected Array <br>";
-    // ar_to_pre($names);
-    // echo "<hr bgcolor='red'>";
-    // echo "Sliced Each Word <br>";
-    // ar_to_pre($sliced_word);
-    // echo "<hr>";
-    // echo "Collected Titles <br>";
-    // ar_to_pre($collected_titles);
-    // echo "<hr>";
-    // echo "Got the frequency each word <br>";
-    // ar_to_pre($count_arry);
-    // echo "<hr>";
 
     foreach($count_arry as $k =>  $ca){
         if($ca >= (count($names)))
@@ -158,26 +146,42 @@ use Automattic\WooCommerce\Admin\API\Products;
     echo "<hr>";
     $arctr = 0;
     
-    
     //ar_to_pre($sliced_word);
     $array1 = array();
     $parent_final_title = array();
     //ar_to_pre($sliced_word);
+    $collected_words = array();
+    $collected_indicex = array();
+    $occurence_counter = 0;
+    $collected_words_with_counter = array();
     foreach($sliced_word as $sw){
-
+        
         for($s = 0; $s < count($sw);$s++){
-            $current = current($sw);
-            if(in_array($current,$sliced_title)){
-                echo current($sw) ."-" . $s. "|";
+            
+            //ar_to_pre($collected_words);
+            echo current($sw) ."-" . $s. "|";
+            array_push($collected_words,current($sw). "-" . $s);
+            $as = array_search(current($sw). "-" . $s,array_keys($collected_words));
+            if($as){
+                if(!empty($collected_words_with_counter[current($sw). "-" . $s])){
+                    $oc_counter = $collected_words_with_counter[current($sw). "-" . $s];
+                    $oc_counter++;
+                    $collected_words_with_counter[current($sw). "-" . $s] = $oc_counter;
+                }
+                
             }
             
+            //array_push($collected_words_with_counter,current($sw). "-" . $s . "-" . $occurence_counter);
             next($sw);
         }
         echo "<br>";
+
     }
 
     $ar_counter = array_count_values($parent_final_title);
     
+    ar_to_pre($collected_words_with_counter);
+    //ar_to_pre($collected_words);
     echo "<hr>";
     ?>
 

@@ -8,10 +8,10 @@ class DSI_Plugin_mgmt{
         
     }
     public function dsi_activation(){
-        add_option( 'ds_developer','tomeng' );
+        //add_option( 'ds_developer','tomeng' );
     }
     public function deactivation(){
-        delete_option( 'dsi_developer');
+        //delete_option( 'dsi_developer');
     }
     public function delete(){
         
