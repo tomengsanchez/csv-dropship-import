@@ -115,24 +115,35 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
     
     for($l = 1; $l < count($lns) ; $l++){
         array_push($data_lines,$lns[$l-1]);
-        array_push($variation_parents,$lns[$l-1][2]);
+        array_push($variation_parents,$lns[$l-1][3] ."wci_split".$lns[$l-1][2]);
     }
     //ar_to_pre($data_lines);
 
     //Play with Collected SKU then convert them into    \
+    $variation_parents_title = array();
     $variation_parents_processed = array();
+    $variations = array();
     foreach($variation_parents as $vp){
         $sku_split = explode('-',$vp);
         if(count($sku_split) > 1){
-            array_push($variation_parents_processed,$sku_split[0]);
+            array_push($variations,$vp);
+            array_push($variation_parents_processed,explode('wci_split',$sku_split[0])[1]);
+            array_push($variation_parents_title,explode('wci_split',$sku_split[0])[0]);
         }
-        
     }
+    $variation_parents_processed = array_unique($variation_parents_processed);
+    $variation_parents_processed_with_final_parent_name = array();
+    foreach($variation_parents_processed as $vpp){
+        foreach($variations as $v){
+            $vexp = explode('wci_split',$v);
+            $variation_parents_processed_with_final_parent_name[explode('-',$vexp[1])[0]] = $vexp[0];
+        }
+    }
+    //make variation parents unique
     $upload_mapping = array();  
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
         $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
-        
         if($sample_data[$x-1][0] == 'description' || $sample_data[$x-1][0] == 'image'){
             //$sample_csv = 'Webpage Description (html)';
             $desciption = $sample_data[$x-1][0];
@@ -167,7 +178,10 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
         'data_per_lines'=> $data_lines,
         'categories'=>$cats,
         'valid' => in_array($name_heading,$prd->valid_name_heading),
-        'variation_parents' => $variation_parents_processed
+        'variations'=>$variations,
+        'variation_parents' => $variation_parents_processed,
+        'variation_parents_title'=>$variation_parents_title,
+        'variation_parent_with_title'=>$variation_parents_processed_with_final_parent_name
         ]
     );
     exit();

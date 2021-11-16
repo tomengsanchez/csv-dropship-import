@@ -28,6 +28,9 @@ use Automattic\WooCommerce\Admin\API\Products;
 <h1 class="h1">Dropship CSV File Import</h1>
 <i>Lets you create or update your WooCommerce Products using a CSV file provided by the Dropship supplier.</i>
 
+<?php 
+
+?>
 <hr>
 
 <fieldset >
@@ -49,24 +52,26 @@ use Automattic\WooCommerce\Admin\API\Products;
                     <input type='file' name='csv_file' id='csv_file'>
                 </td>
                 <td>
-                
-                <button id='delete_all_p' class='button'>Delete All Product (Dev Purposes only)</button>
-                <button id='test12' onclick='jQuery("#csv_file").trigger("change")' class='button'>Test Ajax Script</button>
-                <div id='testDiv'></div>
+                    <button id='delete_all_p' class='button'>Delete All Product (Dev Purposes only)</button>
+                    <button id='test12' onclick='jQuery("#csv_file").trigger("change")' class='button'>Test Ajax Script</button>
+                    <div id='testDiv'></div>
                     <div id='delete_ajxdiv'>
                         
                     </div>
-            </td>
+                </td>
             </tr>
         </table>
 </fieldset>
 
 <hr>
-    <?php   
+    <?php  
+     
+    //$wch = new WC_Helper();
+    
     // Objectives ...Remove the attribute from the each names to make the parent_title.
     // Use these 3 sample scenarios of names
     // Parent for 1. 'DreamZ Fitted Waterproof Mattres Protectr with Ramboo Filbre Cover'
-    $parent_title = '';
+    //$parent_title = '';
 
     $names = array(
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Single Size',
@@ -76,7 +81,7 @@ use Automattic\WooCommerce\Admin\API\Products;
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Queen Size'
     );
     // Parent  for 2. 'Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Cord Globes'
-    $names1 = array(
+    $names = array(
         '3-5 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes',
         '5-7 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes'
     );
@@ -89,99 +94,72 @@ use Automattic\WooCommerce\Admin\API\Products;
         '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics'
     ];
     
-    $skus = array(
-        'EE1501',
-        'EE1501-D',
-        'EE1501-K',
-        'EE1501-KS',
-        'EE1501-Q'
-    );
-
-    $x = 'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Single Size';
-    
-
     $titles = array();
-    $collected_titles = array();
+//    $collected_titles = array();
     $sliced_word = array();    
     foreach($names as $n){
         $namesexp = explode(' ',$n);
         array_push($sliced_word, $namesexp);
-        array_push($titles,$namesexp);
-        foreach($namesexp as $nexp){
-            array_push($collected_titles,$nexp);
-        }
     }
     
-    $count_arry = array_count_values($collected_titles);
-
-    foreach($count_arry as $k =>  $ca){
-        if($ca >= (count($names)))
-            $parent_title .= $k . " ";
-    }
-    $parent_title = rtrim($parent_title);
-    echo "Collected All the Frequency then Compared to array_count <br>";
-
-    echo "<b>" . $parent_title . "</b>";
-    echo "<hr>";
-    
-    echo "compare each word of the title then compare it to each of the sliced word then store its order<br>";
-    //echo $parent_title;
-    $sliced_title = explode(' ',$parent_title);
-
-    $sample_sliced = array(
-        '6x1M',
-        'Air',
-        'Track',
-        'Inflatable',
-        'Mat',
-        'Airtrack',
-        'Tumbling',
-        'Electric',
-        'Air',
-        'Pump',
-        'Gymnastics'
-    );
-
-    ar_to_pre($sliced_title);
-    echo "<hr>";
-    $arctr = 0;
-    
-    //ar_to_pre($sliced_word);
-    $array1 = array();
-    $parent_final_title = array();
-    //ar_to_pre($sliced_word);
     $collected_words = array();
-    $collected_indicex = array();
+    
     $occurence_counter = 0;
     $collected_words_with_counter = array();
+
     foreach($sliced_word as $sw){
-        
         for($s = 0; $s < count($sw);$s++){
-            
-            //ar_to_pre($collected_words);
-            echo current($sw) ."-" . $s. "|";
             array_push($collected_words,current($sw). "-" . $s);
-            $as = array_search(current($sw). "-" . $s,array_keys($collected_words));
-            if($as){
-                if(!empty($collected_words_with_counter[current($sw). "-" . $s])){
-                    $oc_counter = $collected_words_with_counter[current($sw). "-" . $s];
-                    $oc_counter++;
-                    $collected_words_with_counter[current($sw). "-" . $s] = $oc_counter;
-                }
-                
-            }
-            
-            //array_push($collected_words_with_counter,current($sw). "-" . $s . "-" . $occurence_counter);
+            $collected_words_with_counter[current($sw). "-" . $s] = 0;
             next($sw);
         }
-        echo "<br>";
-
+        
     }
 
-    $ar_counter = array_count_values($parent_final_title);
+
+    //loop collected words.
+    foreach($collected_words as $cw){
+        //check if each collected words are in the keys of collected words with counter.
+        foreach($collected_words_with_counter as $key => $val){
+            if($key == $cw){
+                $val = $val+1;
+                $collected_words_with_counter[$key] = $val;
+            }
+        }
+    }
+
+    //ksort($collected_words_with_counter);
+    //ar_to_pre($collected_words_with_counter);
+    $arrange_word = array();
+    $arrange_index = array();
+    //delete words that do not appear often
+    for($x = round(count($names)/2); $x<= count($names) ; $x++){
+        foreach($collected_words_with_counter as $ky => $vl){
+            if($vl == $x){
+                //echo $ky . "-" . $vl . "<br>";
+                array_push($arrange_index, $ky);            
+            }
+        }
+    }
+    //ar_to_pre($arrange_index);
+    $new_ar = array();
+    $ptitle = '';
+    for($s = 0; $s < count($arrange_index); $s++){
+        for($b = 0; $b <= count($arrange_index); $b++){
+            if(explode('-',$arrange_index[$s])[1] == $b){
+                $new_ar[explode('-',$arrange_index[$s])[1]] = explode('-',$arrange_index[$s])[0];
+            }
+        }
+    }
     
-    ar_to_pre($collected_words_with_counter);
-    //ar_to_pre($collected_words);
+    ksort($new_ar);
+    foreach($new_ar as $nval){
+        $ptitle .= $nval. " ";
+    }
+    $parent_title = rtrim($ptitle);//Final
+    
+    
+        
     echo "<hr>";
     ?>
 
@@ -198,11 +176,9 @@ use Automattic\WooCommerce\Admin\API\Products;
             
         ?>
         <script >
-            
             jQuery(document).ready(function(){
                 jQuery( "#progressbar" ).progressbar();
             }); 
-            
             jQuery('.progress').change(function(){
                 alert(1);
             });
@@ -219,7 +195,7 @@ use Automattic\WooCommerce\Admin\API\Products;
             </table>
             <table class='dsi-table'   id='dsi-summary-table' style='width:600px;background-color:white'>
                 <thead class='dsi-thead'>
-                    <tr class='first-tr '>
+                    <tr class='first-tr'>
                         <th>Sku</th>
                         <th>Product Name</th>
                         <th>Price</th>
