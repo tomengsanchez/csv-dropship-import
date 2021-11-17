@@ -133,13 +133,90 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
     }
     $variation_parents_processed = array_unique($variation_parents_processed);
     $variation_parents_processed_with_final_parent_name = array();
+    $variation_parents_processed_with_title_names = array();
     foreach($variation_parents_processed as $vpp){
+        $title = '';
         foreach($variations as $v){
             $vexp = explode('wci_split',$v);
-            $variation_parents_processed_with_final_parent_name[explode('-',$vexp[1])[0]] = $vexp[0];
+            $variation_titles = $vexp[0];
+            $variation_sku_parent = explode('-',$vexp[1])[0];
+            if($vpp == $variation_sku_parent){
+                $title .= $variation_titles . "wci_split";
+            }
         }
+        //play with the functions
+        $title = rtrim($title,'wci_split');
+        $title_exp = explode('wci_split',$title);
+
+        $names = $title_exp;
+        //ar_to_pre($names);
+        $sliced_word = array();    
+        foreach($names as $n){
+            $namesexp = explode(' ',$n);
+            array_push($sliced_word, $namesexp);
+        }
+        
+        $collected_words = array();
+        
+        $occurence_counter = 0;
+        $collected_words_with_counter = array();
+
+        foreach($sliced_word as $sw){
+            for($s = 0; $s < count($sw);$s++){
+                array_push($collected_words,current($sw). "-" . $s);
+                $collected_words_with_counter[current($sw). "-" . $s] = 0;
+                next($sw);
+            }
+            
+        }
+
+
+        //loop collected words.
+        foreach($collected_words as $cw){
+            //check if each collected words are in the keys of collected words with counter.
+            foreach($collected_words_with_counter as $key => $val){
+                if($key == $cw){
+                    $val = $val+1;
+                    $collected_words_with_counter[$key] = $val;
+                }
+            }
+        }
+
+        //ksort($collected_words_with_counter);
+        //ar_to_pre($collected_words_with_counter);
+        $arrange_word = array();
+        $arrange_index = array();
+        //delete words that do not appear often
+        for($x = round(count($names)/2); $x<= count($names) ; $x++){
+            foreach($collected_words_with_counter as $ky => $vl){
+                if($vl == $x){
+                    //echo $ky . "-" . $vl . "<br>";
+                    array_push($arrange_index, $ky);            
+                }
+            }
+        }
+        //ar_to_pre($arrange_index);
+        $new_ar = array();
+        $ptitle = '';
+        for($s = 0; $s < count($arrange_index); $s++){
+            for($b = 0; $b <= count($arrange_index); $b++){
+                if(explode('-',$arrange_index[$s])[1] == $b){
+                    $new_ar[explode('-',$arrange_index[$s])[1]] = explode('-',$arrange_index[$s])[0];
+                }
+            }
+        }
+        
+        ksort($new_ar);
+        foreach($new_ar as $nval){
+            $ptitle .= $nval. " ";
+        }
+        $parent_title = rtrim($ptitle);//Final
+        $title = $parent_title;
+
+        $variation_parents_processed_with_final_parent_name[$vpp] = $title;
     }
     //make variation parents unique
+    
     $upload_mapping = array();  
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];

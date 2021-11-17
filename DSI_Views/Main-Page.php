@@ -93,8 +93,13 @@ use Automattic\WooCommerce\Admin\API\Products;
         '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
         '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics'
     ];
-    
-    $titles = array();
+    $names = [
+        "Levede Bed Frame Double King Fabric With Drawers Storage Wooden Mattress Grey",
+        "Levede Bed Frame King Fabric With Drawers Storage Beige",
+        "Levede Bed Frame Double King Fabric With Drawers Storage Wooden Mattress Grey",
+        "Levede Bed Frame  Queen Fabric With Drawers Storage Wooden Mattress Beige"
+    ];
+    //$titles = array();
 //    $collected_titles = array();
     $sliced_word = array();    
     foreach($names as $n){
@@ -141,7 +146,7 @@ use Automattic\WooCommerce\Admin\API\Products;
             }
         }
     }
-    //ar_to_pre($arrange_index);
+    ar_to_pre($arrange_index);
     $new_ar = array();
     $ptitle = '';
     for($s = 0; $s < count($arrange_index); $s++){
@@ -156,7 +161,7 @@ use Automattic\WooCommerce\Admin\API\Products;
     foreach($new_ar as $nval){
         $ptitle .= $nval. " ";
     }
-    $parent_title = rtrim($ptitle);//Final
+    echo $parent_title = rtrim($ptitle);//Final
     
     
         
