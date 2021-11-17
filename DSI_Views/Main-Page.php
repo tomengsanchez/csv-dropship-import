@@ -99,6 +99,9 @@ use Automattic\WooCommerce\Admin\API\Products;
         "Levede Bed Frame Double King Fabric With Drawers Storage Wooden Mattress Grey",
         "Levede Bed Frame  Queen Fabric With Drawers Storage Wooden Mattress Beige"
     ];
+
+    /** Collect the occurence */
+    
     //$titles = array();
 //    $collected_titles = array();
     $sliced_word = array();    
@@ -146,7 +149,7 @@ use Automattic\WooCommerce\Admin\API\Products;
             }
         }
     }
-    ar_to_pre($arrange_index);
+    //ar_to_pre($arrange_index);
     $new_ar = array();
     $ptitle = '';
     for($s = 0; $s < count($arrange_index); $s++){

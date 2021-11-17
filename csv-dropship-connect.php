@@ -1,6 +1,4 @@
 <?php
-//use Group_Care as GlobalGroup_Care;
-
 /**
  * The plugin bootstrap file
  *
@@ -26,10 +24,14 @@
  * Domain Path:       /languages
  */
 
+register_activation_hook( __FILE__, 'dsi_activate');
+function dsi_activate(){
+
+}
+
 class Dropship_Import{
 	public function __construct()
 	{
-		
 		include_once __DIR__ . "/incl/dsi_loader.php";
 		$this->load();
 	}
@@ -39,21 +41,11 @@ class Dropship_Import{
 }
 $ds = new Dropship_Import();
 $ds;
-
-
-
 //
 
-
-register_activation_hook( __FILE__, function(){
-	add_option( 'dsi_developer','tomengskiee');
-	add_option( 'dsi_wc_ck','');
-	add_option( 'dsi_wc_cs','');
-} );
-
 register_deactivation_hook(__FILE__, function(){
-	delete_option('dsi_developer');
-	delete_option('dsi_wc_cs');
-	delete_option('dsi_wc_ck');
+	// delete_option('dsi_developer');
+	// delete_option('dsi_wc_cs');
+	// delete_option('dsi_wc_ck');
 
 } );

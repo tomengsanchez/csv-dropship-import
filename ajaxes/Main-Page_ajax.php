@@ -266,8 +266,6 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
 
 
 //STEPS
-
-
 function csv_get_and_send($csv_file,$wc_fields,$sample_data){
     header("Content-Type:application/json");
     // READ CSV

@@ -7,13 +7,13 @@ Class DSI_Loader{
     public function __construct()
     {
         //echo"fffffffff";
+        $this->load_files();
         $this->load_controller('DSI_Main_Controller');
         $this->load_controller('DSI_Dropship_Import_Settings');
         $this->load_controller('DSI_Dropship_Providers');
         $this->load_controller('DSI_Db');
-
         $this->load_controller('DSI_Products');
-        $this->load_files();
+        
     }
     public function load_files(){
         // loads the Plugin Management Class
@@ -43,7 +43,7 @@ Class DSI_Loader{
         include_once  __DIR__ . "/../DSI_Views/$views" . ".php";
     }
     public function test(){
-        echo "121";
+        
     }
 
 }
