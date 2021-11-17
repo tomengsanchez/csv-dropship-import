@@ -21,9 +21,9 @@ Class DSI_Loader{
         include_once  __DIR__ . "/dsi_enqueue.php";
         include_once  __DIR__ . "/dsi_admin_menu.php";
         include_once  __DIR__ . "/dsi_custon_functions.php";
-        // foreach(glob("/../ajaxes/*.php") as $filename){
-        //     include_once  __DIR__ . $filename;
-        // }
+        foreach(glob("/../ajaxes/*.php") as $filename){
+            include_once  __DIR__ . $filename;
+        }
         //Ajaxes
 
         include_once  __DIR__ . "/../ajaxes/DSI_Providers_Page_ajax.php";
@@ -47,5 +47,4 @@ Class DSI_Loader{
     }
 
 }
-
 ?>

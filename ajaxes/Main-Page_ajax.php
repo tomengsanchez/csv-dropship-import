@@ -1,5 +1,4 @@
 <?php 
-
 /**
  * Ajaxl Call for CSV DropShip Imports 
  * Page : page=dropship-import-page
@@ -13,18 +12,12 @@ use Automattic\Jetpack\Constants;
 
 use function Composer\Autoload\includeFile;
 
-
-
 add_action('wp_ajax_upload_csv_files','uploadcsv_files_test');
 
 /** function to ajax upload
  * 
  * Verifying Nonce
  */
-
-
-
-
 function uploadcsv_files_test(){
     $dir = preg_replace('/wp-content.*$','',__DIR__);
     //echo $dir;
@@ -580,15 +573,13 @@ function get_product_category_id($cat_name){
 add_action('wp_ajax_add_ajax_script','add_ajax_script');
 
 function add_ajax_script(){
-    
+    exit();
     ?>
     <script >
         <?php insert_js_locally('main.js'); ?>
     </script> 
         <button class='tomengbutton'>test Jav</button>
     <?php 
-    
-    exit();
 }
 
 /**
@@ -608,6 +599,7 @@ function global_ajax_script($jsFile){
 function insert_js_locally($jsFile){
     $ajax_url = plugin_dir_path(__FILE__) . "/jScript/" . $jsFile;
     require_once($ajax_url);
+    exit();
 }
 
 add_action('wp_ajax_get_ajax_script_main_page','get_ajax_script_main_page');
@@ -692,7 +684,9 @@ function get_ajax_script_main_page(){
 /**
  * 
  */
-add_action('wp_ajax_get_field_then_import_idropship',function(){
+add_action('wp_ajax_get_field_then_import_idropship','get_field_then_import_idropship');
+
+function get_field_then_import_idropship(){
     header('Content-Type:application/json');
     $product_id = '';
     $name = $_POST['lines'][3];
@@ -899,6 +893,5 @@ add_action('wp_ajax_get_field_then_import_idropship',function(){
         'test_funtion' => $test
     ]);
     exit();
-});
+}
 ?>
-

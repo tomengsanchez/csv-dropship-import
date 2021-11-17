@@ -8,8 +8,7 @@
   * Displays the Admin Menu of Dropship Import
   */
 add_action ('admin_menu',function(){
-    add_menu_page( 'Dropship Import CSV' , 'Dropship Import',  'manage_options', 'dropship-import-page', 'dsi_connect_main' , 'dashicons-upload
-    ');
+    add_menu_page( 'Dropship Import CSV' , 'Dropship Import',  'manage_options', 'dropship-import-page', 'dsi_connect_main' , 'dashicons-upload');
 });
 /**
   * Function Displays the Admin Menu of Dropship Import

@@ -101,7 +101,35 @@ use Automattic\WooCommerce\Admin\API\Products;
     ];
 
     /** Collect the occurence */
+    $names_array = array();
+    foreach($names as $nms){
+        foreach(explode(' ',$nms) as $removed_spaces){
+            array_push($names_array,$removed_spaces);
+        }
+    }    
     
+    $names_array_unique = array_unique($names_array);
+    ar_to_pre($names_array);
+    ar_to_pre($names_array_unique);
+    //get the occurence of an array;
+    $name_occurances = array();
+    foreach ($names_array_unique as $nau){
+        $name_occurances[$nau] = 0;
+        foreach($names_array as $na){
+            if($na == $nau){
+                $name_occurances[$nau] = $name_occurances[$nau]+1;
+            }    
+        }
+    }
+    ar_to_pre($name_occurances);
+
+
+
+
+
+
+
+    /** SAME */
     //$titles = array();
 //    $collected_titles = array();
     $sliced_word = array();    
@@ -123,8 +151,6 @@ use Automattic\WooCommerce\Admin\API\Products;
         }
         
     }
-
-
     //loop collected words.
     foreach($collected_words as $cw){
         //check if each collected words are in the keys of collected words with counter.
@@ -164,7 +190,7 @@ use Automattic\WooCommerce\Admin\API\Products;
     foreach($new_ar as $nval){
         $ptitle .= $nval. " ";
     }
-    echo $parent_title = rtrim($ptitle);//Final
+    //echo $parent_title = rtrim($ptitle);//Final
     
     
         

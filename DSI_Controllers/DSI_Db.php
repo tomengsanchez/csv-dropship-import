@@ -4,11 +4,6 @@
  * DSI object for raw database functions
  * 
  */
-
-
-
-
-
 class DSI_Db{
 
     /**
@@ -25,7 +20,6 @@ class DSI_Db{
 
     
     public function __construct(){
-        
         $this->dsi_db_connect();
     }
     /**
@@ -68,7 +62,7 @@ class DSI_Db{
         // }
         // else{
         //return $ins->error;
-        print_r($dbargs);
+        //print_r($dbargs);
         if($this->con->error){
             echo  $this->con->error;
         }

@@ -1,5 +1,3 @@
-
-
 <div id="settings-tabs">
     <ul>
 

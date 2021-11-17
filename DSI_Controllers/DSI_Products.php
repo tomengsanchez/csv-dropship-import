@@ -5,11 +5,10 @@
  * @param array $collect_meta_to_import - collect all the final meta/field before import
  * 
  */
-
-require __DIR__ . '/vendor/autoload.php';
+//require __DIR__ . '/vendor/autoload.php';
 
 use Automattic\WooCommerce\Client;
-use Dompdf\FrameDecorator\Image;
+//use Dompdf\FrameDecorator\Image;
 
 class DSI_Products extends DSI_Loader{
     /** product information  */
@@ -1083,7 +1082,6 @@ class DSI_Products extends DSI_Loader{
         return $product_id;
     }
     function get_variation_parent(){
-        
         return false;
     }
 }
