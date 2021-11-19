@@ -8,10 +8,11 @@ jQuery(document).ready(function(){
 var data_per_lines = Array();
 var variation_parents = Array();
 var categories = Array();
-
+var variation_parent_with_title;
  function inline_form_table_json(data,container){
     jQuery('.select_category').selectmenu();
     variation_parents = data.variation_parents;    
+    variation_parent_with_title = data.variation_parent_with_title;    
     data_per_lines = data.data_per_lines;
     
     if(data_per_lines && data.valid == true){
@@ -168,8 +169,8 @@ function sends_data_to_ajax(){
 var selected_category_column;
 function send_one_by_one_ajax(){
     
-    variation_parents_ = variation_parents;
-
+    //variation_parents_ = variation_parents;
+    //variation_parents_with_title = '';
     if(jQuery('#dropship_company').val()== 'aw-dropship'){
         url_ = locsData.admin_url+'admin-ajax.php?action=get_field_then_import';
     }
@@ -193,7 +194,8 @@ function send_one_by_one_ajax(){
             mark_up_value: mark_up_value_,
             upload_images_yes: upload_images_,
             skip_existing_sku_yes : skip_existing_sku_,
-            variation_parents_ :variation_parents
+            variation_parents_ :variation_parents,
+            variation_parents_with_title_:variation_parent_with_title
             
         
         }
@@ -251,8 +253,6 @@ function send_one_by_one_ajax(){
                 jQuery('input#price_mark_up_text').removeAttr('disabled');
             }
         }
-        
-            
     }).fail(function(){
         trout+='<tr>';
         trout+='<td>' + e.data.sku + "</td>";

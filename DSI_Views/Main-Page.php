@@ -4,8 +4,6 @@
 use Automattic\WooCommerce\Admin\API\Products;
 
 ?>
-
-
 <?php 
 // $id = '34077';
 // $p = new WC_Product($id);
@@ -29,7 +27,7 @@ use Automattic\WooCommerce\Admin\API\Products;
 <i>Lets you create or update your WooCommerce Products using a CSV file provided by the Dropship supplier.</i>
 
 <?php 
-
+    
 ?>
 <hr>
 
@@ -65,14 +63,18 @@ use Automattic\WooCommerce\Admin\API\Products;
 
 <hr>
     <?php  
-     
+
+    
+    $attrib_id= $GLOBALS['wpdb']->get_results("SELECT * FROM {$wpdb->prefix}wp_woocommerce_attribute_taxonomies WHERE attribute_label ='Variations' ");
+    //ar_to_pre($attrib_id);
+    echo count($attrib_id);
     //$wch = new WC_Helper();
     
     // Objectives ...Remove the attribute from the each names to make the parent_title.
     // Use these 3 sample scenarios of names
     // Parent for 1. 'DreamZ Fitted Waterproof Mattres Protectr with Ramboo Filbre Cover'
     //$parent_title = '';
-
+    
     $names = array(
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Single Size',
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Double Size',
@@ -80,13 +82,14 @@ use Automattic\WooCommerce\Admin\API\Products;
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover King Single',
         'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Queen Size'
     );
+
     // Parent  for 2. 'Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Cord Globes'
-    $names = array(
+    $names1 = array(
         '3-5 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes',
         '5-7 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes'
     );
     // Parent  for 2. 'Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics'
-    $names = [  
+    $names1 = [  
         '4x1M Inflatable Air Track Mat Tumbling Pump Floor Home Gymnastics Gym in Red',
         '5x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
         '5x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
@@ -109,8 +112,8 @@ use Automattic\WooCommerce\Admin\API\Products;
     }    
     
     $names_array_unique = array_unique($names_array);
-    ar_to_pre($names_array);
-    ar_to_pre($names_array_unique);
+    // ar_to_pre($names_array);
+    // ar_to_pre($names_array_unique);
     //get the occurence of an array;
     $name_occurances = array();
     foreach ($names_array_unique as $nau){
@@ -121,13 +124,7 @@ use Automattic\WooCommerce\Admin\API\Products;
             }    
         }
     }
-    ar_to_pre($name_occurances);
-
-
-
-
-
-
+    //ar_to_pre($name_occurances);
 
     /** SAME */
     //$titles = array();
@@ -163,11 +160,11 @@ use Automattic\WooCommerce\Admin\API\Products;
     }
 
     //ksort($collected_words_with_counter);
-    //ar_to_pre($collected_words_with_counter);
+     //ar_to_pre($collected_words_with_counter);
     $arrange_word = array();
     $arrange_index = array();
     //delete words that do not appear often
-    for($x = round(count($names)/2); $x<= count($names) ; $x++){
+    for($x = round(count($names)); $x<= count($names) ; $x++){
         foreach($collected_words_with_counter as $ky => $vl){
             if($vl == $x){
                 //echo $ky . "-" . $vl . "<br>";
@@ -191,14 +188,11 @@ use Automattic\WooCommerce\Admin\API\Products;
         $ptitle .= $nval. " ";
     }
     //echo $parent_title = rtrim($ptitle);//Final
-    
-    
-        
-    echo "<hr>";
+
+    //echo "<hr>";
     ?>
 
 <div class='dsi-row' >
-
     <input type='hidden' class='loop-counter' value='0'>
     <div class="dsi-col">
     <h2 style='padding-left:35px'>IMPORT PARAMETERS</h2>

@@ -70,7 +70,6 @@ function uploadcsv_files_test(){
                 );
                 get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data);
             }
-            
         }
         else{
             echo json_encode(['message'=>'<h4 span="padding-left:20px">Please Select .csv file</h4>']);
@@ -81,6 +80,14 @@ function uploadcsv_files_test(){
 }
 
 function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
+
+
+    $remove_this_attrib = [
+        'Pcs',
+        'kg',
+        'pcs'
+    ];
+
     header("Content-Type:application/json");
     $prd = new DSI_Products();
     $csv = $_FILES['csv_file']['tmp_name'];// File NAme
@@ -174,13 +181,12 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
                 }
             }
         }
-
         //ksort($collected_words_with_counter);
         //ar_to_pre($collected_words_with_counter);
         $arrange_word = array();
         $arrange_index = array();
         //delete words that do not appear often
-        for($x = round(count($names)/2); $x<= count($names) ; $x++){
+        for($x = round(count($names)); $x<= count($names) ; $x++){
             foreach($collected_words_with_counter as $ky => $vl){
                 if($vl == $x){
                     //echo $ky . "-" . $vl . "<br>";
@@ -227,8 +233,6 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
         if($sample_data[$x-1][0] == 'name'){
             $desciption = $sample_data[$x-1][0];
         }
-        
-        
         $upload_mapping[$sample_data[$x-1][0]] = $head[$sample_data[$x-1][1]] . "wci_split". $sample_data[$x-1][1] . "wci_split". $sample_csv . "wci_split". $csv_value;   
     }
 
@@ -431,27 +435,11 @@ function get_field_then_import(){
                 }
                 
             }
-            // $args =[
-            //     'id'=> $update_id,
-            //     'name'=>$_POST['lines'][10],
-            //     'sku'=>$sku,
-            //     'price'=>$price,
-            //     'thumbnail'=>$thumbnail1,
-            //     'thumbnail2'=>$thumbnail2,
-            //     'description'=>$_POST['lines'][16],
-            //     'category'=> $category_id,
-            //     'length'=>$lnt,
-            //     'width'=>$wdt,
-            //     'height'=>'0',
-            //     'weight'=>$_POST['lines'][12],
-
-            // ];
-
-            // $pid = $prd->dsi_wc_product_simple_update($args);
+            
             $images_array = array(
                 $thumbnail2
             );
-    
+            
             $categories = array(
                 $category_id
             );
@@ -470,13 +458,10 @@ function get_field_then_import(){
                 'weight'=>$_POST['lines'][12],
                 'product_type', 'simple'
             ];
-            global $wpdb;
 
+            global $wpdb;
             $table = $wpdb->prefix. "posts";
             $prd->update_product_raw_sql($table,$args);
-
-            
-        
             $status_message = 'Updated';
         }
         else{
@@ -499,8 +484,9 @@ function get_field_then_import(){
         //     'height'=>'0',
         //     'weight'=>$_POST['lines'][12],
         // ];
-
+        
         // $pid = $prd->dsi_wc_product_simple($args);
+
         $images_array = array(
             $thumbnail2
         );
@@ -628,12 +614,12 @@ function get_ajax_script_main_page(){
                     else{
                         read_rows_from_table(jQuery(this).siblings('table'),sel,mark_up_price_base,mark_up_price_value,upload_images_c,skip_existing_sku_c);    
                     }
-                    // jQuery(this).attr('disabled','disabled');
-                    // jQuery('select.price_mark_up_select').attr('disabled','disabled');
-                    // jQuery('input#price_mark_up_text').attr('disabled','disabled');
-                    // jQuery('input#upload_images').attr('disabled','disabled');
-                    // jQuery("#skip_existing_sku").attr('disabled','disabled');
-                    // jQuery('select.select_category_column').attr('disabled','disabled');
+                    jQuery(this).attr('disabled','disabled');
+                    jQuery('select.price_mark_up_select').attr('disabled','disabled');
+                    jQuery('input#price_mark_up_text').attr('disabled','disabled');
+                    jQuery('input#upload_images').attr('disabled','disabled');
+                    jQuery("#skip_existing_sku").attr('disabled','disabled');
+                    jQuery('select.select_category_column').attr('disabled','disabled');
                 }
                 else{
                     if(mark_up_price_value ==''){
@@ -649,12 +635,12 @@ function get_ajax_script_main_page(){
                                 read_rows_from_table(jQuery(this).siblings('table'),sel,mark_up_price_base,mark_up_price_value,upload_images_c,skip_existing_sku_c);    
                             }
 
-                            // jQuery(this).attr('disabled','disabled');
-                            // jQuery('select.price_mark_up_select').attr('disabled','disabled');
-                            // jQuery('input#price_mark_up_text').attr('disabled','disabled');
-                            // jQuery('input#upload_images').attr('disabled','disabled');
-                            // jQuery("#skip_existing_sku").attr('disabled','disabled');
-                            // jQuery('select.select_category_column').attr('disabled','disabled');
+                            jQuery(this).attr('disabled','disabled');
+                            jQuery('select.price_mark_up_select').attr('disabled','disabled');
+                            jQuery('input#price_mark_up_text').attr('disabled','disabled');
+                            jQuery('input#upload_images').attr('disabled','disabled');
+                            jQuery("#skip_existing_sku").attr('disabled','disabled');
+                            jQuery('select.select_category_column').attr('disabled','disabled');
                         }
                         else{
                             alert('Mark Up Price is not a Number');
@@ -662,9 +648,7 @@ function get_ajax_script_main_page(){
                         }
                     }
                 }
-                
                 x =0;
-                
             }).addClass('button').animate('10000');
             
             jQuery('select.price_mark_up_select').change(function(){
@@ -684,9 +668,11 @@ function get_ajax_script_main_page(){
 /**
  * 
  */
+
 add_action('wp_ajax_get_field_then_import_idropship','get_field_then_import_idropship');
 
 function get_field_then_import_idropship(){
+    
     header('Content-Type:application/json');
     $product_id = '';
     $name = $_POST['lines'][3];
@@ -704,12 +690,11 @@ function get_field_then_import_idropship(){
     $image = $_POST['lines'][29];
     $category = $_POST['lines'][26];
     $thumbnail1 = '';
-
+    $action = '';
     $product_type = 'simple';
     
-
     $image_array = explode(',',$image);
-    $xc = 0;
+    $xc = 0;                                                   
     if($_POST['upload_images_yes'] == 'true'){
         foreach($image_array as $im){
             array_push($images,$im);
@@ -726,11 +711,39 @@ function get_field_then_import_idropship(){
 
     //product type
     $sku_0 = explode('-',$sku)[0];
-    
+    $variation_parent = '';
+    $variation_attributes = '';
     if(in_array($sku_0, $_POST['variation_parents_'])){
         $product_type = 'variable';
+        $variation_parent = $sku_0;
+        $variation_parent_title = $_POST['variation_parents_with_title_'][$variation_parent];
+        $name_exp = array();
+        $name_exp = explode($variation_parent_title,$name);
+
+        $variation_attributes = $name_exp;
+        $variation_attributes = implode('',$name_exp);
+        $variation_attributes = trim($variation_attributes);
     }
+
+    $variation_parents_name = $prd->process_variation_parent($sku,$_POST['variation_parents_'],$_POST['lines']);
+    $variation_parents_id = wc_get_product([
+        'name'=>$variation_parents_name
+    ]);
+
+    if($variation_parents_id == null){
+        // Insert Variants Product
+        
+    }
+    
+    $attrib_id= $GLOBALS['wpdb']->get_results("SELECT * FROM " . $wpdb->prefix ." wp_woocommerce_attribute_taxonomies WHERE attribute_label ='Variations' ");
+    //echo count($attrib_id);
+    echo count($attrib_id);
+    if(count($attrib_id) ==0 ){
+        //echo $prd->dsi_create_product_attribute('Variations');
+    }
+    
     // work with categories
+
     $categories = $prd->category_manipulation_nested($category);
     $images = array();
     $test = $sku;
@@ -752,6 +765,8 @@ function get_field_then_import_idropship(){
     else { // existing no
         /** insert */
         //work on variation
+      
+
         //insert_product - 
     }
     //else
@@ -769,106 +784,92 @@ function get_field_then_import_idropship(){
     
     
 
-    // $xc = 0;
-    // if($_POST['upload_images_yes'] == 'true'){
-    //     foreach($image_array as $im){
-    //         array_push($images,$im);
-    //     $xc++;
-    // }
-    // }
-    // else{
-    //     // $thumbnail1 = null;
-    //     // $thumbnail2 = null;
-    // }
+    $xc = 0;
+    if($_POST['upload_images_yes'] == 'true'){
+        foreach($image_array as $im){
+            array_push($images,$im);
+        $xc++;
+    }
+    }
+    else{
+        // $thumbnail1 = null;
+        // $thumbnail2 = null;
+    }
+    if($existing == 1){ // IF SKU IS 
+        $action = 'update';
+        exit();
+        if($_POST['skip_existing_sku_yes']=='false'){
+            if($_POST['upload_images_yes'] == 'true'){
+                //delete_ main image
+                $p = new WC_Product($update_id);
+                $attachmentID= $p->get_image_id();
+                //wp_delete_attachment('34041', true);
+                $attachment_path = get_attached_file( $attachmentID); 
+                //Delete attachment from database only, not file
+                $delete_attachment = wp_delete_attachment($attachmentID, true);
+                //Delete attachment file from disk
+                $delete_file = unlink($attachment_path);
+                //delete all gallery images
+                $gallery_image_ids= $p->get_gallery_image_ids();
 
-    // $test = $prd->process_variation_parent($sku,$_POST['variation_parents_'],$_POST['lines']);
+            }
+            $args = [
+                'id'=> $update_id,
+                'name'=>$name,
+                'sku'=>$sku,
+                'price'=>$regular_price,
+                'sale_price'=>$sale_price,
+                'images'=>$images,
+                'thumbnail'=> $thumbnail1,
+                'description'=>$description,
+                'category'=> $categories,
+                'length'=>$length,
+                'width'=>$length,
+                'height'=>'0',
+                'weight'=>$weight,
+                'product_type' => $product_type
 
-    // if($existing == 1){ // IF SKU IS 
-    //     if($_POST['skip_existing_sku_yes']=='false'){
-    //         if($_POST['upload_images_yes'] == 'true'){
-    //             //delete_ main image
-    //             $p = new WC_Product($update_id);
-    //             $attachmentID= $p->get_image_id();
-    //             //wp_delete_attachment('34041', true);
-    //             $attachment_path = get_attached_file( $attachmentID); 
-    //             //Delete attachment from database only, not file
-    //             $delete_attachment = wp_delete_attachment($attachmentID, true);
-    //             //Delete attachment file from disk
-    //             $delete_file = unlink($attachment_path);
-    //             //delete all gallery images
-    //             $gallery_image_ids= $p->get_gallery_image_ids();
+            ];
+            global $wpdb;
 
-    //         }
-    //         $args = [
-    //             'id'=> $update_id,
-    //             'name'=>$name,
-    //             'sku'=>$sku,
-    //             'price'=>$regular_price,
-    //             'sale_price'=>$sale_price,
-    //             'images'=>$images,
-    //             'thumbnail'=> $thumbnail1,
-    //             'description'=>$description,
-    //             'category'=> $categories,
-    //             'length'=>$length,
-    //             'width'=>$length,
-    //             'height'=>'0',
-    //             'weight'=>$weight,
-    //             'product_type' => $product_type
+            $table = $wpdb->prefix. "posts";
+            $prd->update_product_raw_sql($table,$args);
 
-    //         ];
-    //         global $wpdb;
-
-    //         $table = $wpdb->prefix. "posts";
-    //         $prd->update_product_raw_sql($table,$args);
-
-    //         $status_message = 'Updated';
-    //     }
-    //     else{
-    //         $status_message = 'Skipped';
-    //     }
-    // }
-    // else{
-    //     // $args = [
-    //     //     'name'=>$name,
-    //     //     'type' => $type,
-    //     //     'sku'=>$sku,
-    //     //     'price'=>$regular_price,
-    //     //     'sale_price'=>$sale_price,
-    //     //     'images'=>$images,
-    //     //     'description'=>$description,
-    //     //     'category'=> $category,
-    //     //     'length'=>$length,
-    //     //     'width'=>$width,
-    //     //     'height'=>$height,
-    //     //     'weight'=>$_POST['lines'][12],
-    //     // ];
-    //     // //$pid = $prd->dsi_wc_product_simple($args);
-    //     $thumbnail1 = $images[0];
+            $status_message = 'Updated';
+        }
+        else{
+            $status_message = 'Skipped';
+        }
+    }
+    else{
+        $action = 'insert';
         
-    //     $args = [
-    //         'name'=>$name,
-    //         'type' => $type,
-    //         'sku'=>$sku,
-    //         'post_parent'=>$parent_id,
-    //         'price'=>$regular_price,
-    //         'sale_price'=>$sale_price,
-    //         'images'=>$images,
-    //         'description'=>$description,
-    //         'thumbnail'=>$thumbnail1,
-    //         'category'=> $categories,
-    //         'length'=>$length,
-    //         'width'=>$width,
-    //         'height'=>$height,
-    //         'weight'=>$weight,
-    //         'product_type' => $product_type
-    //     ];
+        $thumbnail1 = $images[0];
+        
+        $args = [
+            'name'=>$name,
+            'type' => $type,
+            'sku'=>$sku,
+            'post_parent'=>$parent_id,
+            'price'=>$regular_price,
+            'sale_price'=>$sale_price,
+            'images'=>$images,
+            'description'=>$description,
+            'thumbnail'=>$thumbnail1,
+            'category'=> $categories,
+            'length'=>$length,
+            'width'=>$width,
+            'height'=>$height,
+            'weight'=>$weight,
+            'product_type' => $product_type
+        ];
 
-    //     global $wpdb;
-    //     $table = $wpdb->prefix . "posts";
-    //     //$pid = $prd->insert_product_raw_sql($table,$args);
+        global $wpdb;
+        $table = $wpdb->prefix . "posts";
+        //$pid = $prd->insert_product_raw_sql($table,$args);
 
-    //     $status_message = 'Created';
-    // }
+        $status_message = 'Created';
+    }
     
     echo json_encode([
         'data'=>[
@@ -881,6 +882,7 @@ function get_field_then_import_idropship(){
             'width'=> $width.
             ''
         ],
+        'action'=>$action,
         'status_message'=>$status_message,
         'selected_cat' => $_POST['selected_category'],
         'mark_up_base' => $_POST['mark_up_base'],
@@ -888,9 +890,13 @@ function get_field_then_import_idropship(){
         'mark_up_perc' => $percent,
         'price_up'=> $price,
         'media' => get_attached_media( '', $pid ),
-        'variation_parents' => $_POST['variation_parents_'],
+        'variation_parents_name'=>$variation_parents_name,
+        'variants_child_name'=> $name,
+        'variation_parent_id' => $variation_parents_id,
+        'variation_parent_title'=>$variation_parent_title,
         'product_type' => $product_type,
-        'test_funtion' => $test
+        'variants_child_sku' => $test,
+        'variation_attributes'=> $variation_attributes
     ]);
     exit();
 }

@@ -26,7 +26,7 @@
 
 register_activation_hook( __FILE__, 'dsi_activate');
 function dsi_activate(){
-
+	
 }
 
 class Dropship_Import{
@@ -47,5 +47,4 @@ register_deactivation_hook(__FILE__, function(){
 	// delete_option('dsi_developer');
 	// delete_option('dsi_wc_cs');
 	// delete_option('dsi_wc_ck');
-
-} );
+});

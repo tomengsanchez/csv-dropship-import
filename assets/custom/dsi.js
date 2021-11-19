@@ -122,7 +122,7 @@ jQuery(document).ready(function(){
 function span_parser_alert(jsonData){
     return "<span class='span_parser_alert'>" + jsonData+ "</span>";
 }
-
+    
 
 /**
  * Custom Javascript for CSV DropShip Imports 
@@ -146,7 +146,6 @@ jQuery(document).ready(function(){
         });
         
     });
-
 
     jQuery("#delete_all_p").click(function(e){
         e.preventDefault();
