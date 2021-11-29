@@ -560,6 +560,7 @@ function get_field_then_import(){
 
     //Category Manipulation : Add/EDIT product category on first row only
     $endtime = microtime(true);
+    
     $loading_time = ($endtime - $starttime);
     echo json_encode([
         'data'=>[
@@ -711,6 +712,8 @@ function get_ajax_script_main_page(){
 add_action('wp_ajax_get_field_then_import_idropship','get_field_then_import_idropship');
 
 function get_field_then_import_idropship(){
+    
+    $starttime = microtime(true);
     global $wpdb;
     header('Content-Type:application/json');
     // $_POST['lines'] = get_transient('dsi_trans_idropship');
@@ -786,6 +789,7 @@ function get_field_then_import_idropship(){
     $existing = 0;
     if(count($product_existing) == 1){
         $existing = 1;
+        $update_id = $product_existing[0]->post_id;
     }
 
     $variation_parents_sku = $prd->process_variation_parent($sku,$_POST['variation_parents_'],$_POST['lines']);
@@ -798,19 +802,12 @@ function get_field_then_import_idropship(){
         //echo $variation_parents_id;
         
         if($variation_parents_loop == null){
-            
+            //VARIABLE
             if($existing == 1){
                 if($_POST['skip_existing_sku_yes']=='false'){
                     $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
                     $d = $GLOBALS['wpdb']->get_results($q);
                     $variation_parents_id = $d[0]->post_id;
-                    $product = new WC_Product_Variable($variation_parents_id);        
-                    $parent_args = [
-                        'name'=>$variation_parent_title,
-                        'sku'=>$variation_parents_sku,
-                        'category'=>$categories
-                    ];
-                    
                     $product = new WC_Product_Variable($variation_parents_id);
                     $product->set_name($variation_parent_title);
                     $product->set_sku($variation_parents_sku);
@@ -832,7 +829,7 @@ function get_field_then_import_idropship(){
                     
                     $product->set_attributes(array($attribute));
                     
-                    $variation_parents_id=$product->save();
+                    $product->save();
                 }
             }
             else{
@@ -842,7 +839,7 @@ function get_field_then_import_idropship(){
                     'sku'=>$variation_parents_sku,
                     'category'=>$categories
                 ];
-                //$variation_parents_id = $prd->insert_new_variation_parent($parent_args);
+                $variation_parents_id = $prd->insert_new_variation_parent($parent_args);
 
                 $product = new WC_Product_Variable($variation_parents_id);
                 $thumb_id = $prd->dsi_set_thumbnail($images[0]);
@@ -932,10 +929,59 @@ function get_field_then_import_idropship(){
 
             $table = $wpdb->prefix. "posts";
             if($product_type=='simple'){
-                //$prd->update_product_raw_sql($table,$args);
+                $simple = new WC_Product_Simple($update_id);
+                $simple->set_name($name);
+                //$variation->set_parent_id($variation_parents_id);
+
+                $thumb_id = $prd->dsi_set_thumbnail($images[0]);
+                $simple->set_image_id($thumb_id);
+                $imgs_id = $prd->dsi_set_image_gallery($images);
+                $imgs_id_imp = implode(',', $imgs_id);
+                $simple->set_gallery_image_ids($imgs_id_imp);
+                $simple->set_regular_price($regular_price);
+                $simple->set_sale_price($sale_price);
+                $simple->set_sku($variants_child_sku);
+                $simple->set_category_ids($categories);
+                $simple->set_manage_stock('yes');
+                $simple->set_stock_quantity($stock);
+                $simple->set_height($height);
+                $simple->set_length($length);
+                $simple->set_width($width);
+                $simple->set_weight($weight);
+                $simple->set_downloadable('no');
+                //$variation->set_stock_quantity($stock);
+                $simple->set_virtual('no');
+                $simple->set_stock_status('instock');
+                $simple->set_attributes(array('variants' => $variants_child_sku . " ". ltrim($variation_attributes,'') ));
+                $simple->save();
             }
             else{
                 //$prd->update_product_raw_sql($table,$args);
+                $variation = new WC_Product_Variation($update_id);
+                $variation->set_name($name);
+                $variation->set_parent_id($variation_parents_id);
+
+                $thumb_id = $prd->dsi_set_thumbnail($images[0]);
+                $variation->set_image_id($thumb_id);
+                $imgs_id = $prd->dsi_set_image_gallery($images);
+                $imgs_id_imp = implode(',', $imgs_id);
+                $variation->set_gallery_image_ids($imgs_id_imp);
+                $variation->set_regular_price($regular_price);
+                $variation->set_sale_price($sale_price);
+                $variation->set_sku($variants_child_sku);
+                $variation->set_category_ids($categories);
+                $variation->set_manage_stock('yes');
+                $variation->set_stock_quantity($stock);
+                $variation->set_height($height);
+                $variation->set_length($length);
+                $variation->set_width($width);
+                $variation->set_weight($weight);
+                $variation->set_downloadable('no');
+                //$variation->set_stock_quantity($stock);
+                $variation->set_virtual('no');
+                $variation->set_stock_status('instock');
+                $variation->set_attributes(array('variants' => $variants_child_sku . " ". ltrim($variation_attributes,'') ));
+                $variation->save();
             }
             
 
@@ -1033,6 +1079,7 @@ function get_field_then_import_idropship(){
         $status_message = 'Created';
     }
     $vp_sku = rtrim($variation_parents_sku,'-MAIN');
+    $endtime = microtime(true);
     echo json_encode([
         'data'=>[
             'product_id'=> $pid,
@@ -1062,7 +1109,8 @@ function get_field_then_import_idropship(){
         'variation_attributes'=> $variation_attributes,
         'attributes_id' => $parent_attribute_id,
         'variation_attributes_terms'=>$_POST['variation_attribute_terms_'][$vp_sku],
-        'teststring'=>$teststring
+        'teststring'=>$teststring,
+        'loading_time'=> number_format($endtime - $starttime,2)
     ]);
     //delete_transient('dsi_trans_idropship');
     exit();

@@ -214,9 +214,9 @@ use Automattic\WooCommerce\Admin\API\Products;
     //array_push($ar,'tomeng');
     //$product->save();
     //$product->save();
-    $q_get_existing = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="BF1012-Q-BE"';
+    $q_get_existing = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="AC207"';
     $p = $GLOBALS['wpdb']->get_results($q_get_existing);
-    //ar_to_pre($p);
+    ar_to_pre($p[0]->post_id);
     ?>
 
 <div class='dsi-row' >
