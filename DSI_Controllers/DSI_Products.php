@@ -943,7 +943,6 @@ class DSI_Products extends DSI_Loader{
     function process_variation_parent($sku ,$variation_parents,$args=array()){
         $parent_variable_product = '';
         $sku_split = explode('-',$sku);
-        
             if(in_array($sku_split[0],$variation_parents)){
                 $parent_variable_product = $sku_split[0]. "-MAIN";
             }

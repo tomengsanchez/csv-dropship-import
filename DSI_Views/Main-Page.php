@@ -186,7 +186,8 @@ use Automattic\WooCommerce\Admin\API\Products;
         }
     }
     
-    ksort($new_ar);
+    
+
     foreach($new_ar as $nval){
         $ptitle .= $nval. " ";
     }
@@ -213,7 +214,9 @@ use Automattic\WooCommerce\Admin\API\Products;
     //array_push($ar,'tomeng');
     //$product->save();
     //$product->save();
-    
+    $q_get_existing = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="BF1012-Q-BE"';
+    $p = $GLOBALS['wpdb']->get_results($q_get_existing);
+    //ar_to_pre($p);
     ?>
 
 <div class='dsi-row' >

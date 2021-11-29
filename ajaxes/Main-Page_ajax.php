@@ -747,10 +747,11 @@ function get_field_then_import_idropship(){
         // $thumbnail1 = null;
         // $thumbnail2 = null;
     }
-
+    
     $prd = new DSI_Products();
     $update_id = '';
     $categories = $prd->category_manipulation_nested($category);
+    
     //product type
     $sku_0 = explode('-',$sku)[0];
     $variation_parent = '';
@@ -768,8 +769,8 @@ function get_field_then_import_idropship(){
         $variation_attributes = ltrim($variation_attributes);
         $variation_attributes = trim($variation_attributes);
     }
-
-    $variation_parents_id = '';
+    
+    // $variation_parents_id = '';
 
     // $attrib_id= $GLOBALS['wpdb']->get_results("SELECT * FROM " . $wpdb->prefix ."woocommerce_attribute_taxonomies WHERE attribute_label ='Variations' ");
     
@@ -780,78 +781,117 @@ function get_field_then_import_idropship(){
     // }else{
     //     $parent_attribute_id = $attrib_id[0]->attribute_id;
     // }
-    $products = wc_get_products( array(
-        'sku'=>$sku
-    ) );
+    $q_get_existing = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="' . $sku . '" AND meta_key ="_sku"';
+    $product_existing = $GLOBALS['wpdb']->get_results($q_get_existing);
     $existing = 0;
-    foreach($products as $p){
-        $update_id = $p->get_id();
+    if(count($product_existing) == 1){
         $existing = 1;
     }
-    
+
+    $variation_parents_sku = $prd->process_variation_parent($sku,$_POST['variation_parents_'],$_POST['lines']);
+    $variation_parents_loop = wc_get_products([
+        'sku'=>$variation_parents_sku
+    ]);
+
     if($product_type == 'variable' ){
-        $variation_parents_sku = $prd->process_variation_parent($sku,$_POST['variation_parents_'],$_POST['lines']);
-        $variation_parents_loop = wc_get_products([
-            'sku'=>$variation_parents_sku
-        ]);
+    
         //echo $variation_parents_id;
         
         if($variation_parents_loop == null){
-            $parent_args = [
-                'name'=>$variation_parent_title,
-                'sku'=>$variation_parents_sku,
-                'category'=>$categories
-            ];
+            
             if($existing == 1){
-                $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
-                $d = $GLOBALS['wpdb']->get_results($q);
-                $variation_parents_id = $d[0]->post_id;
+                if($_POST['skip_existing_sku_yes']=='false'){
+                    $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
+                    $d = $GLOBALS['wpdb']->get_results($q);
+                    $variation_parents_id = $d[0]->post_id;
+                    $product = new WC_Product_Variable($variation_parents_id);        
+                    $parent_args = [
+                        'name'=>$variation_parent_title,
+                        'sku'=>$variation_parents_sku,
+                        'category'=>$categories
+                    ];
+                    
+                    $product = new WC_Product_Variable($variation_parents_id);
+                    $product->set_name($variation_parent_title);
+                    $product->set_sku($variation_parents_sku);
+                    $thumb_id = $prd->dsi_set_thumbnail($images[0]);
+                    next($images);
+                    $product->set_image_id($thumb_id);
+                    $imgs_id = $prd->dsi_set_image_gallery($images);
+                    $imgs_id_imp = implode(',', $imgs_id);
+                    $product->set_gallery_image_ids($imgs_id_imp);
+                    $attribute = new WC_Product_Attribute();
+                    $attribute->set_id(0);
+                    $attribute->set_name('variants');
+                    $vp_sku = rtrim($variation_parents_sku,'-MAIN');
+                    $attribute->set_options(explode(WC_DELIMITER, $_POST['variation_attribute_terms_'][$vp_sku]));
+                    
+                    $product->set_category_ids($categories);
+                    $attribute->set_visible(true);
+                    $attribute->set_variation(true);
+                    
+                    $product->set_attributes(array($attribute));
+                    
+                    $variation_parents_id=$product->save();
+                }
             }
             else{
-                $variation_parents_id = $prd->insert_new_variation_parent($parent_args);
+                /** INSERT SCRIPT */
+                $parent_args = [
+                    'name'=>$variation_parent_title,
+                    'sku'=>$variation_parents_sku,
+                    'category'=>$categories
+                ];
+                //$variation_parents_id = $prd->insert_new_variation_parent($parent_args);
+
+                $product = new WC_Product_Variable($variation_parents_id);
+                $thumb_id = $prd->dsi_set_thumbnail($images[0]);
+                next($images);
+                $product->set_image_id($thumb_id);
+                $imgs_id = $prd->dsi_set_image_gallery($images);
+                $imgs_id_imp = implode(',', $imgs_id);
+                $product->set_gallery_image_ids($imgs_id_imp);
+                $attribute = new WC_Product_Attribute();
+                $attribute->set_id(0);
+                $attribute->set_name('variants');
+                $vp_sku = rtrim($variation_parents_sku,'-MAIN');
+                $attribute->set_options(explode(WC_DELIMITER, $_POST['variation_attribute_terms_'][$vp_sku]));
+                
+                $product->set_category_ids($categories);
+                $attribute->set_visible(true);
+                $attribute->set_variation(true);
+                
+                $product->set_attributes(array($attribute));
+                
+                $variation_parents_id=$product->save();
             }
             
 
             $product = new WC_Product_Variable($variation_parents_id);
             if($existing == 1){
-                $product->set_name($variation_parent_title);
-                $product->set_sku($variation_parents_sku);
+                if($_POST['skip_existing_sku_yes']=='false'){
+                    $product->set_name($variation_parent_title);
+                    $product->set_sku($variation_parents_sku);
+                }
             }
-            $thumb_id = $prd->dsi_set_thumbnail($images[0]);
-            next($images);
-            $product->set_image_id($thumb_id);
-            $imgs_id = $prd->dsi_set_image_gallery($images);
-            $imgs_id_imp = implode(',', $imgs_id);
-            $product->set_gallery_image_ids($imgs_id_imp);
-            $attribute = new WC_Product_Attribute();
-            $attribute->set_id(0);
-            $attribute->set_name('variants');
-            $vp_sku = rtrim($variation_parents_sku,'-MAIN');
-            $attribute->set_options(explode(WC_DELIMITER, $_POST['variation_attribute_terms_'][$vp_sku]));
             
-            $product->set_category_ids($categories);
-            $attribute->set_visible(true);
-            $attribute->set_variation(true);
-            
-            $product->set_attributes(array($attribute));
-            $variation_parents_id=$product->save();
-
             $teststring = 'Insert Parent';
         }
         else{
             $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
             $d = $GLOBALS['wpdb']->get_results($q);
-            $variation_parents_id = $d[0]->post_id;
+            $variation_parents_id = $d[0]->post_id; 
             $teststring = 'Update Parent';
         }
     }
     
-    // work with categories
+    
+    // // work with categories
 
-    //$images = array();
+    // //$images = array();
     $variants_child_sku = $sku;
 
-    $xc = 0;
+    // $xc = 0;
     
     if($existing == 1){ // IF SKU IS 
         $action = 'update';
@@ -906,57 +946,61 @@ function get_field_then_import_idropship(){
         }
     }
     else{
+        /** INSERT SCRIPT */
         $action = 'insert';
         
         $thumbnail1 = $images[0];
         
-        $args = [
-            'name'=>$name,
-            'type' => $type,
-            'sku'=>$sku,
-            'post_parent'=>$variation_parents_id,
-            'price'=>$regular_price,
-            'sale_price'=>$sale_price,
-            'images'=>$images,
-            'description'=>$description,
-            'thumbnail'=>$thumbnail1,
-            'category'=> $categories,
-            'length'=>$length,
-            'width'=>$width,
-            'height'=>$height,
-            'weight'=>$weight,
-            'product_type' => $product_type
-        ];
+        // $args = [
+        //     'name'=>$name,
+        //     'type' => $type,
+        //     'sku'=>$sku,
+        //     'post_parent'=>$variation_parents_id,
+        //     'price'=>$regular_price,
+        //     'sale_price'=>$sale_price,
+        //     'images'=>$images,
+        //     'description'=>$description,
+        //     'thumbnail'=>$thumbnail1,
+        //     'category'=> $categories,
+        //     'length'=>$length,
+        //     'width'=>$width,
+        //     'height'=>$height,
+        //     'weight'=>$weight,
+        //     'product_type' => $product_type
+        // ];
 
         // global $wpdb;
         // $table = $wpdb->prefix . "posts";
+        
         if($product_type == 'simple'){
-            $variation = new WC_Product_Simple();
-            $variation->set_name($name);
+            $simple = new WC_Product_Simple();
+            $simple->set_name($name);
             //$variation->set_parent_id($variation_parents_id);
 
             $thumb_id = $prd->dsi_set_thumbnail($images[0]);
-            $variation->set_image_id($thumb_id);
-            $variation->set_regular_price($regular_price);
-            $variation->set_sale_price($sale_price);
-            $variation->set_sku($variants_child_sku);
-            $variation->set_category_ids($categories);
-            $variation->set_manage_stock('yes');
-            $variation->set_stock_quantity($stock);
-            $variation->set_height($height);
-            $variation->set_length($length);
-            $variation->set_width($width);
-            $variation->set_weight($weight);
-            $variation->set_downloadable('no');
+            $simple->set_image_id($thumb_id);
+            $imgs_id = $prd->dsi_set_image_gallery($images);
+            $imgs_id_imp = implode(',', $imgs_id);
+            $simple->set_gallery_image_ids($imgs_id_imp);
+            $simple->set_regular_price($regular_price);
+            $simple->set_sale_price($sale_price);
+            $simple->set_sku($variants_child_sku);
+            $simple->set_category_ids($categories);
+            $simple->set_manage_stock('yes');
+            $simple->set_stock_quantity($stock);
+            $simple->set_height($height);
+            $simple->set_length($length);
+            $simple->set_width($width);
+            $simple->set_weight($weight);
+            $simple->set_downloadable('no');
             //$variation->set_stock_quantity($stock);
-            $variation->set_virtual('no');
-            $variation->set_stock_status('instock');
-            $variation->set_attributes(array('variants' => $variants_child_sku . " ". ltrim($variation_attributes,'') ));
-            $variation->save();
+            $simple->set_virtual('no');
+            $simple->set_stock_status('instock');
+            $simple->set_attributes(array('variants' => $variants_child_sku . " ". ltrim($variation_attributes,'') ));
+            $simple->save();
 
         }
         else if($product_type == 'variable'){
-
             $variation = new WC_Product_Variation();
             $variation->set_name($name);
             $variation->set_parent_id($variation_parents_id);
@@ -980,15 +1024,7 @@ function get_field_then_import_idropship(){
             $variation->save();
 
             // The variation data
-            $variation_data =  array(
-                'attributes' => array(
-                    'Variations' => $variation_attributes    
-                ),
-                'sku'           => $sku,
-                'regular_price' => $regular_price,
-                'sale_price'=>$sale_price,
-                'stock_qty' =>0
-            );
+            
             //dsi_create_product_variation($variation_parents_id,$variation_data);
         }
         
