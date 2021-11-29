@@ -170,13 +170,6 @@ jQuery(document).ready(function(){
 });
 
 
-/**
- * Custom Javascript for CSV DropShip Imports 
- * Page : page=dropship-providers 
- * File : DSI_Dropship_Providers_Views.php
- * 
- * 
- */
 
 
 /**

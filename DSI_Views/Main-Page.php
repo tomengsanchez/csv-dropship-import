@@ -64,10 +64,12 @@ use Automattic\WooCommerce\Admin\API\Products;
 <hr>
     <?php  
 
-    
-    $attrib_id= $GLOBALS['wpdb']->get_results("SELECT * FROM {$wpdb->prefix}wp_woocommerce_attribute_taxonomies WHERE attribute_label ='Variations' ");
+    global $wpdb;
+    $attrib_id= $GLOBALS['wpdb']->get_results("SELECT * FROM {$wpdb->prefix}woocommerce_attribute_taxonomies WHERE attribute_label ='Variations' ");
+
     //ar_to_pre($attrib_id);
-    echo count($attrib_id);
+    //echo $attrib_id[0]->attribute_id;
+    //print_r($attrib_id);
     //$wch = new WC_Helper();
     
     // Objectives ...Remove the attribute from the each names to make the parent_title.
@@ -96,6 +98,7 @@ use Automattic\WooCommerce\Admin\API\Products;
         '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
         '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics'
     ];
+
     $names = [
         "Levede Bed Frame Double King Fabric With Drawers Storage Wooden Mattress Grey",
         "Levede Bed Frame King Fabric With Drawers Storage Beige",
@@ -187,9 +190,30 @@ use Automattic\WooCommerce\Admin\API\Products;
     foreach($new_ar as $nval){
         $ptitle .= $nval. " ";
     }
+
     //echo $parent_title = rtrim($ptitle);//Final
 
     //echo "<hr>";
+    // $sku = 'BF1012-MAIN';
+    
+    // $parent_id = '526';
+    // $product = new WC_Product_Variable('526');
+    // $ar = $product->get_attributes()['variations']['data']['options'];
+    
+    // $attribute = new WC_Product_Attribute();
+    //         //$attribute->set_id(0);
+    // $attribute->set_name('Variations');
+    // array_push($ar,'Tomeng12');
+    // ar_to_pre($ar);
+    // $attribute->set_options($ar);
+    // $attribute->set_visible(true);
+    // $attribute->set_variation(true);
+    
+    // $product->set_attributes(array($attribute));
+    //array_push($ar,'tomeng');
+    //$product->save();
+    //$product->save();
+    
     ?>
 
 <div class='dsi-row' >
@@ -236,4 +260,9 @@ use Automattic\WooCommerce\Admin\API\Products;
     </div>
 </div>
 
- <?php ?>
+ <?php 
+
+//delete_transient('dsi_trans_idropship');
+//ar_to_pre(get_transient('dsi_trans_idropship'));
+
+ ?>

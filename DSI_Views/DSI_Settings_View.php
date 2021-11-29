@@ -1,99 +1,155 @@
-<div id="settings-tabs">
-    <ul>
+<?php
 
-        <li><a href="#api">WooCommerce API settings</a></li>
-        <li><a href="#other">Other Settings</a></li>
-    </ul>
-    <script>
-        jQuery(document).ready(function(){
-            load_credential_value();
-            jQuery('#form-api-settings').on('submit',function(e){
-                var datastring = jQuery(this).serialize();
-                validates = [
-                    jQuery('#cons_key'),
-                    jQuery('#cons_secret')
+class Events_List_Table extends WP_List_Table
+{
+    function __construct()
+    {
+        global $status, $page;
 
-                ];
-                if(validate_these(validates)){
-                    jQuery.ajax({
-                        method:'POST',
-                        data:{
-                            _nonce : locsData.csv_nonce,
-                            ck : jQuery('#cons_key').val(),
-                            cs : jQuery('#cons_secret').val()
-                        },
-                        url:locsData.admin_url + 'admin-ajax.php?action=set_credentials',
-                        success:function(e){
-                            jQuery('#alert').html(e.message);
-                            load_credential_value();
-                            
-                        }
-                    })
-                }
-                e.preventDefault();
-            });
-            
-        });
-        function load_credential_value(){
-            validates = [
-                jQuery('#cons_key'),
-                jQuery('#cons_secret')
+        parent::__construct(array(
+            'singular'  => 'wp_list_event',
+            'plural'    => 'wp_list_events',
+            'ajax'      => false
+        ));
+    }
 
-            ];
-            jQuery.ajax({
-                method:'POST',
-                data:{
-                    _nonce : locsData.csv_nonce
-                },
-                url:locsData.admin_url + 'admin-ajax.php?action=get_dsi_api_credentials',
-                success:function(e){
-                    //alert(e);
-                    jQuery('#cons_key').val((e.ck)?e.ck:'');
-                    jQuery('#cons_secret').val((e.cs)?e.cs:'');
-                    
-                    
-                    validate_these(validates);
-                }
-            });
-           
+    function column_default($item, $column_name)
+    {
+        switch($column_name) {
+            case 'start_date':
+            case 'end_date':
+            case 'status':
+                return ucfirst($item[$column_name]);
+            default:
+                return print_r($item,true);
         }
-    </script>
-    
-    <div id='api' class='tabs'>
-        <form id='form-api-settings' action="<?php echo admin_url('admin.php?page=dropship-import-settings');?>" method='POST'>
-            <table>
-                <tr>
-                    <td>URL</td>
-                    <td><input type="text" id='url' name='cons_key' value='<?php echo home_url()?>' readonly></td>
-                </tr>
-                <tr>
-                    <td>Consumer Key</td>
-                    <td><input type="text" id='cons_key' name='cons_key' val_message='Please Enter Consumer Key'></td>
-                </tr>
-                <tr>
-                    <td>Consumer Secret</td>
-                    <td><input type="text" id='cons_secret' name='cons_secret' val_message='Please Enter Consumer Key'></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td><input type="submit" id='submit_settings' value='Save' class='button'><div id='alert'></div></td>
-                </tr>
-            </table>
-        </form>
-        <hr>
-        <h2>Instructions</h2>
-        <ol>
-            <li><p>Add Key the WooCommerce Rest API in the Advanced Settings of WooCommerce  <a href="<?php _e(home_url())?>/wp-admin/admin.php?page=wc-settings&tab=advanced&section=keys" target='_BLANK'>Click This link</a>.</li>
-            <li>Copy and Paste the Consumer Key and Consumer Secret</li>
-        </ol>
-        <img  src="<?php echo plugins_url('csv-dropship-import/assets/img/dsi_wc_api_ss.png')?>" alt="" height='400px'>
-    </div>
-    
-    <div id='other'>
-        
-    </div>
-</div>
-<hr>
-<?php 
+    }
 
-?>
+    function column_title($item)
+    {
+        $actions = array(
+            'edit'          => '<a href="'.MvcRouter::admin_url(array('controller' => 'events', 'action' => 'edit', 'id' => $item['id'])).'">Edit</a>',
+            'registrants'   => '<a href="'.MvcRouter::admin_url(array('controller' => 'events', 'action' => 'registrants', 'id' => $item['id'])).'">Registrants</a>',
+            'export'        => '<a href="' . admin_url() . 'downloads/registrants?id=' . $item['id'] . '">Export CSV</a>',
+        );
+
+        if ($item['status'] === 'new') {
+            $actions['cancel'] = '<a href="'.MvcRouter::admin_url(array('controller' => 'events', 'action' => 'cancel', 'id' => $item['id'])).'">Cancel</a>';
+        } else {
+            $actions['uncancel'] = '<a href="'.MvcRouter::admin_url(array('controller' => 'events', 'action' => 'uncancel', 'id' => $item['id'])).'">Uncancel</a>';
+        }
+
+        return sprintf(
+            '%1$s %3$s',
+            $item['title'],
+            $item['id'],
+            $this->row_actions($actions)
+        );
+    }
+
+    function column_start_date($item)
+    {
+        return date('F jS, Y h:i a', strtotime($item['start_date']));
+    }
+
+    function column_end_date($item)
+    {
+        return date('F jS, Y h:i a', strtotime($item['end_date']));
+    }
+
+    function column_cb($item)
+    {
+        return sprintf(
+            '<input type="checkbox" name="%1$s[]" value="%2$s" />',
+            $this->_args['singular'],
+            $item['id']
+        );
+    }
+
+    function get_columns()
+    {
+        $columns = array(
+            'cb'            => '<input type="checkbox">',
+            'title'         => 'Title',
+            'start_date'    => 'Start Date',
+            'end_date'      => 'End Date',
+            'status'        => 'Status',
+        );
+
+        return $columns;
+    }
+
+    function get_sortable_columns()
+    {
+        $sortable_columns = array(
+            'title'         => array('title', false),
+            'start_date'    => array('start_date', false),
+            'end_date'  => array('end_date', false),
+            'status'        => array('status', false),
+        );
+
+        return $sortable_columns;
+    }
+
+    function get_bulk_actions()
+    {
+        $actions = array(
+            'cancel'    => 'Cancel Events',
+            'delete'    => 'Delete',
+        );
+
+        return $actions;
+    }
+
+    function process_bulk_action()
+    {
+        global $wpdb;
+
+        if ('delete' === $this->current_action()) {
+            foreach ($_GET['wp_list_event'] as $event) {
+                // $wpdb->delete($wpdb->prefix.'atb_events', array('id' => $event));
+            }
+        }
+
+        if ('cancel' === $this->current_action()) {
+            // blah blah
+        }
+    }
+
+    function custom_bulk_admin_notices()
+    {
+        echo 'Hello.';
+    }
+
+    function prepare_items()
+    {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'atb_events';
+        $per_page = 100;
+        $columns = $this->get_columns();
+        $hidden = array();
+        $sortable = $this->get_sortable_columns();
+
+        $this->_column_headers = array($columns, $hidden, $sortable);
+
+        $this->process_bulk_action();
+
+        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name");
+
+        $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;
+        $orderby = (isset($_REQUEST['orderby']) && in_array($_REQUEST['orderby'], array_keys($this->get_sortable_columns()))) ? $_REQUEST['orderby'] : 'title';
+        $order = (isset($_REQUEST['order']) && in_array($_REQUEST['order'], array('asc', 'desc'))) ? $_REQUEST['order'] : 'asc';
+
+        $this->items = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name ORDER BY $orderby $order LIMIT %d OFFSET %d", $per_page, $paged), ARRAY_A);
+
+        $this->set_pagination_args(array(
+            'total_items'   => $total_items,
+            'per_page'      => $per_page,
+            'total_pages'   => ceil($total_items / $per_page),
+        ));
+    }
+}
+
+$new = new Events_List_Table();
+ ?>

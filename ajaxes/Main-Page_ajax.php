@@ -60,6 +60,7 @@ function uploadcsv_files_test(){
                     array('regular_price','25'),
                     array('sale_price','24'),
                     array('item_group','36'),
+                    array('stock','14'),
                     array('item_subgroup','37'),
                     array('brand','34'),
                     array('weight','18'),
@@ -112,11 +113,13 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
 
     $variation_parents = array();
     $data_lines = array();
-    
+    $transient_lines = [];
     for($l = 1; $l < count($lns) ; $l++){
         array_push($data_lines,$lns[$l-1]);
         array_push($variation_parents,$lns[$l-1][3] ."wci_split".$lns[$l-1][2]);
+        $transient_lines[] = $data_lines;
     }
+    set_transient('dsi_trans_idropship',$data_lines);
     //ar_to_pre($data_lines);
 
     //Play with Collected SKU then convert them into    \
@@ -134,6 +137,8 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
     $variation_parents_processed = array_unique($variation_parents_processed);
     $variation_parents_processed_with_final_parent_name = array();
     $variation_parents_processed_with_title_names = array();
+
+   
     foreach($variation_parents_processed as $vpp){
         $title = '';
         foreach($variations as $v){
@@ -207,6 +212,7 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
         
         ksort($new_ar);
         foreach($new_ar as $nval){
+            $nval = str_replace(' ', '', $nval);
             $ptitle .= $nval. " ";
         }
         $parent_title = rtrim($ptitle);//Final
@@ -214,9 +220,49 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
 
         $variation_parents_processed_with_final_parent_name[$vpp] = $title;
     }
+    
+    $variation_attributes_terms = array();
+    $xve = 0;
+    foreach($variation_parents_processed_with_final_parent_name as $key => $val){
+        $attr_string = '';
+        foreach($variations as $v){
+            $vexp = explode('wci_split',$v);    
+            $get_key = explode('-',$vexp[1]);
+            if($get_key[0] == $key){
+                $vexpst = $vexp[0];
+                $vexpst = rtrim($vexpst,' ');
+                $title_exp = explode($val,$vexpst);
+                $title_form = implode(" ",$title_exp);
+                $sku_trim = rtrim($vexp[1]);
+
+                $title_form = ltrim($title_form);
+                
+                $attr_string .= $sku_trim ." " . $title_form . "|";
+
+                // $val_exp = explode($val,$vexp[0]);
+                // foreach($val_exp as $valxp){
+                //     $sku_trim = rtrim($vexp[1]);
+                //     $att = ltrim($valxp);
+                //     if($valxp != ''){
+                //         $attr_string.=  $sku_trim ." " . $att . "|";
+                //     }
+                    
+                // }
+            }
+        }
+        
+        $attr_string = rtrim($attr_string,'|');
+        $attr_string = ltrim($attr_string,'|');
+        $variation_attributes_terms[$key] = $attr_string;
+        
+    }
+    
     //make variation parents unique
     
     $upload_mapping = array();  
+    //if(!get_transient('dsi_trans_data_lines_idropship')){
+        //set_transient('dsi_trans_data_lines_idropship',$data_lines,0);
+    //}
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
         $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
@@ -255,7 +301,8 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
         'variations'=>$variations,
         'variation_parents' => $variation_parents_processed,
         'variation_parents_title'=>$variation_parents_title,
-        'variation_parent_with_title'=>$variation_parents_processed_with_final_parent_name
+        'variation_parent_with_title'=>$variation_parents_processed_with_final_parent_name,
+        'variation_attribute_terms'=>$variation_attributes_terms
         ]
     );
     exit();
@@ -266,8 +313,6 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
 function csv_get_and_send($csv_file,$wc_fields,$sample_data){
     header("Content-Type:application/json");
     // READ CSV
-
-    
     $prd = new DSI_Products();
     $csv = $_FILES['csv_file']['tmp_name'];// File NAme
     $fo = fopen($csv,'r');// Open the File
@@ -302,7 +347,6 @@ function csv_get_and_send($csv_file,$wc_fields,$sample_data){
             $name_column = $sample_data[$x-1][1];
             $name_heading = $head[$name_column];
         }
-        
         $upload_mapping[$sample_data[$x-1][0]] = $head[$sample_data[$x-1][1]] . "wci_split". $sample_data[$x-1][1] . "wci_split". $sample_csv . "wci_split". $csv_value;   
     }
     //get Categories
@@ -411,7 +455,6 @@ function get_field_then_import(){
 
                 $attachmentID= $p->get_image_id();
 
-
                 //wp_delete_attachment('34041', true);
 
                 $attachment_path = get_attached_file( $attachmentID); 
@@ -421,12 +464,8 @@ function get_field_then_import(){
                 $delete_file = unlink($attachment_path);
 
                 //delete all gallery images
-
-
                 $gallery_image_ids= $p->get_gallery_image_ids();
-
                 for($i = 0; $i <= count($gallery_image_ids) ; $i++){
-
                     $attachment_path = get_attached_file( $gallery_image_ids[$i]); 
                     //Delete attachment from database only, not file
                     $delete_attachment = wp_delete_attachment($gallery_image_ids[$i], true);
@@ -435,7 +474,7 @@ function get_field_then_import(){
                 }
                 
             }
-            
+
             $images_array = array(
                 $thumbnail2
             );
@@ -672,8 +711,10 @@ function get_ajax_script_main_page(){
 add_action('wp_ajax_get_field_then_import_idropship','get_field_then_import_idropship');
 
 function get_field_then_import_idropship(){
-    
+    global $wpdb;
     header('Content-Type:application/json');
+    // $_POST['lines'] = get_transient('dsi_trans_idropship');
+    // $_POST['lines'] = $_POST['lines'][$_POST['line_counter_']];
     $product_id = '';
     $name = $_POST['lines'][3];
     $type = $_POST['lines'][1];
@@ -688,11 +729,12 @@ function get_field_then_import_idropship(){
     $width = $_POST['lines'][20];
     $height = $_POST['lines'][21];
     $image = $_POST['lines'][29];
+    $stock = $_POST['lines'][14];
     $category = $_POST['lines'][26];
     $thumbnail1 = '';
     $action = '';
     $product_type = 'simple';
-    
+    $images = array();
     $image_array = explode(',',$image);
     $xc = 0;                                                   
     if($_POST['upload_images_yes'] == 'true'){
@@ -708,11 +750,12 @@ function get_field_then_import_idropship(){
 
     $prd = new DSI_Products();
     $update_id = '';
-
+    $categories = $prd->category_manipulation_nested($category);
     //product type
     $sku_0 = explode('-',$sku)[0];
     $variation_parent = '';
     $variation_attributes = '';
+    
     if(in_array($sku_0, $_POST['variation_parents_'])){
         $product_type = 'variable';
         $variation_parent = $sku_0;
@@ -722,31 +765,21 @@ function get_field_then_import_idropship(){
 
         $variation_attributes = $name_exp;
         $variation_attributes = implode('',$name_exp);
+        $variation_attributes = ltrim($variation_attributes);
         $variation_attributes = trim($variation_attributes);
     }
 
-    $variation_parents_name = $prd->process_variation_parent($sku,$_POST['variation_parents_'],$_POST['lines']);
-    $variation_parents_id = wc_get_product([
-        'name'=>$variation_parents_name
-    ]);
+    $variation_parents_id = '';
 
-    if($variation_parents_id == null){
-        // Insert Variants Product
-        
-    }
+    // $attrib_id= $GLOBALS['wpdb']->get_results("SELECT * FROM " . $wpdb->prefix ."woocommerce_attribute_taxonomies WHERE attribute_label ='Variations' ");
     
-    $attrib_id= $GLOBALS['wpdb']->get_results("SELECT * FROM " . $wpdb->prefix ." wp_woocommerce_attribute_taxonomies WHERE attribute_label ='Variations' ");
-    //echo count($attrib_id);
-    echo count($attrib_id);
-    if(count($attrib_id) ==0 ){
-        //echo $prd->dsi_create_product_attribute('Variations');
-    }
-    
-    // work with categories
-
-    $categories = $prd->category_manipulation_nested($category);
-    $images = array();
-    $test = $sku;
+    // $parent_attribute_id = '';
+    // if(count($attrib_id) ==0 ){
+    //     //echo "Create Attributes-";
+    //     $parent_attribute_id =  $prd->dsi_create_product_attribute('Variations');
+    // }else{
+    //     $parent_attribute_id = $attrib_id[0]->attribute_id;
+    // }
     $products = wc_get_products( array(
         'sku'=>$sku
     ) );
@@ -755,49 +788,74 @@ function get_field_then_import_idropship(){
         $update_id = $p->get_id();
         $existing = 1;
     }
-
-    if($existing == 1){//if existing
-        /** Update */
-        //work on category
-        //work on variation
-        //insert_product - 
-    } // IF SKU IS 
-    else { // existing no
-        /** insert */
-        //work on variation
-      
-
-        //insert_product - 
-    }
-    //else
+    
+    if($product_type == 'variable' ){
+        $variation_parents_sku = $prd->process_variation_parent($sku,$_POST['variation_parents_'],$_POST['lines']);
+        $variation_parents_loop = wc_get_products([
+            'sku'=>$variation_parents_sku
+        ]);
+        //echo $variation_parents_id;
         
+        if($variation_parents_loop == null){
+            $parent_args = [
+                'name'=>$variation_parent_title,
+                'sku'=>$variation_parents_sku,
+                'category'=>$categories
+            ];
+            if($existing == 1){
+                $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
+                $d = $GLOBALS['wpdb']->get_results($q);
+                $variation_parents_id = $d[0]->post_id;
+            }
+            else{
+                $variation_parents_id = $prd->insert_new_variation_parent($parent_args);
+            }
+            
 
+            $product = new WC_Product_Variable($variation_parents_id);
+            if($existing == 1){
+                $product->set_name($variation_parent_title);
+                $product->set_sku($variation_parents_sku);
+            }
+            $thumb_id = $prd->dsi_set_thumbnail($images[0]);
+            next($images);
+            $product->set_image_id($thumb_id);
+            $imgs_id = $prd->dsi_set_image_gallery($images);
+            $imgs_id_imp = implode(',', $imgs_id);
+            $product->set_gallery_image_ids($imgs_id_imp);
+            $attribute = new WC_Product_Attribute();
+            $attribute->set_id(0);
+            $attribute->set_name('variants');
+            $vp_sku = rtrim($variation_parents_sku,'-MAIN');
+            $attribute->set_options(explode(WC_DELIMITER, $_POST['variation_attribute_terms_'][$vp_sku]));
+            
+            $product->set_category_ids($categories);
+            $attribute->set_visible(true);
+            $attribute->set_variation(true);
+            
+            $product->set_attributes(array($attribute));
+            $variation_parents_id=$product->save();
 
-
-
-    // check if exisiting
-
-
+            $teststring = 'Insert Parent';
+        }
+        else{
+            $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
+            $d = $GLOBALS['wpdb']->get_results($q);
+            $variation_parents_id = $d[0]->post_id;
+            $teststring = 'Update Parent';
+        }
+    }
     
-    // $status_message = '';
-    // // work with product type and variation
-    
-    
+    // work with categories
+
+    //$images = array();
+    $variants_child_sku = $sku;
 
     $xc = 0;
-    if($_POST['upload_images_yes'] == 'true'){
-        foreach($image_array as $im){
-            array_push($images,$im);
-        $xc++;
-    }
-    }
-    else{
-        // $thumbnail1 = null;
-        // $thumbnail2 = null;
-    }
+    
     if($existing == 1){ // IF SKU IS 
         $action = 'update';
-        exit();
+        //exit();
         if($_POST['skip_existing_sku_yes']=='false'){
             if($_POST['upload_images_yes'] == 'true'){
                 //delete_ main image
@@ -833,7 +891,13 @@ function get_field_then_import_idropship(){
             global $wpdb;
 
             $table = $wpdb->prefix. "posts";
-            $prd->update_product_raw_sql($table,$args);
+            if($product_type=='simple'){
+                //$prd->update_product_raw_sql($table,$args);
+            }
+            else{
+                //$prd->update_product_raw_sql($table,$args);
+            }
+            
 
             $status_message = 'Updated';
         }
@@ -850,7 +914,7 @@ function get_field_then_import_idropship(){
             'name'=>$name,
             'type' => $type,
             'sku'=>$sku,
-            'post_parent'=>$parent_id,
+            'post_parent'=>$variation_parents_id,
             'price'=>$regular_price,
             'sale_price'=>$sale_price,
             'images'=>$images,
@@ -864,13 +928,75 @@ function get_field_then_import_idropship(){
             'product_type' => $product_type
         ];
 
-        global $wpdb;
-        $table = $wpdb->prefix . "posts";
-        //$pid = $prd->insert_product_raw_sql($table,$args);
+        // global $wpdb;
+        // $table = $wpdb->prefix . "posts";
+        if($product_type == 'simple'){
+            $variation = new WC_Product_Simple();
+            $variation->set_name($name);
+            //$variation->set_parent_id($variation_parents_id);
+
+            $thumb_id = $prd->dsi_set_thumbnail($images[0]);
+            $variation->set_image_id($thumb_id);
+            $variation->set_regular_price($regular_price);
+            $variation->set_sale_price($sale_price);
+            $variation->set_sku($variants_child_sku);
+            $variation->set_category_ids($categories);
+            $variation->set_manage_stock('yes');
+            $variation->set_stock_quantity($stock);
+            $variation->set_height($height);
+            $variation->set_length($length);
+            $variation->set_width($width);
+            $variation->set_weight($weight);
+            $variation->set_downloadable('no');
+            //$variation->set_stock_quantity($stock);
+            $variation->set_virtual('no');
+            $variation->set_stock_status('instock');
+            $variation->set_attributes(array('variants' => $variants_child_sku . " ". ltrim($variation_attributes,'') ));
+            $variation->save();
+
+        }
+        else if($product_type == 'variable'){
+
+            $variation = new WC_Product_Variation();
+            $variation->set_name($name);
+            $variation->set_parent_id($variation_parents_id);
+
+            $thumb_id = $prd->dsi_set_thumbnail($images[0]);
+            $variation->set_image_id($thumb_id);
+            $variation->set_regular_price($regular_price);
+            $variation->set_sale_price($sale_price);
+            $variation->set_sku($variants_child_sku);
+            $variation->set_manage_stock('yes');
+            $variation->set_stock_quantity($stock);
+            $variation->set_height($height);
+            $variation->set_length($length);
+            $variation->set_width($width);
+            $variation->set_weight($weight);
+            $variation->set_downloadable('no');
+            //$variation->set_stock_quantity($stock);
+            $variation->set_virtual('no');
+            $variation->set_stock_status('instock');
+            $variation->set_attributes(array('variants' => $variants_child_sku . " ". ltrim($variation_attributes,'') ));
+            $variation->save();
+
+            // The variation data
+            $variation_data =  array(
+                'attributes' => array(
+                    'Variations' => $variation_attributes    
+                ),
+                'sku'           => $sku,
+                'regular_price' => $regular_price,
+                'sale_price'=>$sale_price,
+                'stock_qty' =>0
+            );
+            //dsi_create_product_variation($variation_parents_id,$variation_data);
+        }
+        
+        
 
         $status_message = 'Created';
     }
-    
+    $vp_sku = rtrim($variation_parents_sku,'-MAIN');
     echo json_encode([
         'data'=>[
             'product_id'=> $pid,
@@ -883,21 +1009,26 @@ function get_field_then_import_idropship(){
             ''
         ],
         'action'=>$action,
-        'status_message'=>$status_message,
+        'status_message'=>$status_message . "-" . $_POST['line_counter_'], 
         'selected_cat' => $_POST['selected_category'],
         'mark_up_base' => $_POST['mark_up_base'],
         'mark_up_value' => $_POST['mark_up_value'],
         'mark_up_perc' => $percent,
-        'price_up'=> $price,
+        'price_up'=> $regular_price,
+        'parent_attribute_id' => $parent_attribute_id,
         'media' => get_attached_media( '', $pid ),
-        'variation_parents_name'=>$variation_parents_name,
+        'variation_parents_sku'=>$variation_parents_sku,
         'variants_child_name'=> $name,
         'variation_parent_id' => $variation_parents_id,
         'variation_parent_title'=>$variation_parent_title,
         'product_type' => $product_type,
-        'variants_child_sku' => $test,
-        'variation_attributes'=> $variation_attributes
+        'variants_child_sku' => $variants_child_sku,
+        'variation_attributes'=> $variation_attributes,
+        'attributes_id' => $parent_attribute_id,
+        'variation_attributes_terms'=>$_POST['variation_attribute_terms_'][$vp_sku],
+        'teststring'=>$teststring
     ]);
+    //delete_transient('dsi_trans_idropship');
     exit();
 }
 ?>

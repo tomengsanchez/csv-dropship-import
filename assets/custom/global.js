@@ -9,12 +9,14 @@ var data_per_lines = Array();
 var variation_parents = Array();
 var categories = Array();
 var variation_parent_with_title;
+var variation_attribute_terms;
+var line_counter = 0;
  function inline_form_table_json(data,container){
     jQuery('.select_category').selectmenu();
     variation_parents = data.variation_parents;    
     variation_parent_with_title = data.variation_parent_with_title;    
     data_per_lines = data.data_per_lines;
-    
+    variation_attribute_terms = data.variation_attribute_terms
     if(data_per_lines && data.valid == true){
         jQuery('#row_holder_finish').val(data_per_lines.length);
         categories = data.categories;
@@ -55,7 +57,7 @@ var variation_parent_with_title;
         output += '</tr>';
         output += '<tr>';
         output += '<td><span style="padding:0px 0px 0px 20px;">Upload/Update Images</span>';
-        output += '<td class="upload_images_td"><input type="checkbox" checked="checked" id="upload_images"></td>';
+        output += '<td class="upload_images_td"><input type="checkbox"  id="upload_images"></td>';
         output += '<td></td>';
         output += '</tr>';
         output += '<tr><td><span style="padding:0px 0px 0px 20px;" colspan="2">Price Mark-Up</span></td><td class="price_mark_up_td"><select class="price_mark_up_select"><option>None</option><option>Price $</option><option>Percentage %</option></select></td>';
@@ -195,11 +197,14 @@ function send_one_by_one_ajax(){
             upload_images_yes: upload_images_,
             skip_existing_sku_yes : skip_existing_sku_,
             variation_parents_ :variation_parents,
-            variation_parents_with_title_:variation_parent_with_title
+            variation_parents_with_title_:variation_parent_with_title,
+            variation_attribute_terms_ : variation_attribute_terms,
+            line_counter_ : line_counter
             
         
         }
     }).always(function(e){
+        line_counter++;
         start= jQuery('#row_holder_start').val() *1;
         finish = jQuery('#row_holder_finish').val() *1;
         if(start >= (finish-1)){
