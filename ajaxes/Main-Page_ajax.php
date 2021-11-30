@@ -805,9 +805,26 @@ function get_field_then_import_idropship(){
             //VARIABLE
             if($existing == 1){
                 if($_POST['skip_existing_sku_yes']=='false'){
+                    
                     $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
                     $d = $GLOBALS['wpdb']->get_results($q);
                     $variation_parents_id = $d[0]->post_id;
+
+                    if($_POST['upload_images_yes'] == 'true'){
+                        //delete_ main image
+                        $p = new WC_Product($variation_parents_id);
+                        $attachmentID= $p->get_image_id();
+                        //wp_delete_attachment('34041', true);
+                        $attachment_path = get_attached_file( $attachmentID); 
+                        //Delete attachment from database only, not file
+                        $delete_attachment = wp_delete_attachment($attachmentID, true);
+                        //Delete attachment file from disk
+                        $delete_file = unlink($attachment_path);
+                        //delete all gallery images
+                        $gallery_image_ids= $p->get_gallery_image_ids();
+        
+                    }
+
                     $product = new WC_Product_Variable($variation_parents_id);
                     $product->set_name($variation_parent_title);
                     $product->set_sku($variation_parents_sku);
@@ -925,7 +942,7 @@ function get_field_then_import_idropship(){
                 'product_type' => $product_type
 
             ];
-            global $wpdb;
+            //global $wpdb;
 
             $table = $wpdb->prefix. "posts";
             if($product_type=='simple'){
@@ -1092,7 +1109,7 @@ function get_field_then_import_idropship(){
             ''
         ],
         'action'=>$action,
-        'status_message'=>$status_message . "-" . $_POST['line_counter_'], 
+        'status_message'=>$status_message, 
         'selected_cat' => $_POST['selected_category'],
         'mark_up_base' => $_POST['mark_up_base'],
         'mark_up_value' => $_POST['mark_up_value'],

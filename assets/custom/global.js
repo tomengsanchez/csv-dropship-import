@@ -241,7 +241,7 @@ function send_one_by_one_ajax(){
             trout+='<td>' + e.data.price + "</td>";
             trout+='<td>111' + e.status_message + '('+ new Date().getTime() - this.start_time +' ms)</td>';
             trout+='</tr>';
-            jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td class='res' status='" + e.status_message +"'>" + e.status_message + " (" + e.loading_time +" s/ " + ((t/1000).toFixed(2)) + "s)</td></tr>");
+            jQuery('#dsi-summary-table').append("<tr class='add-row'><td>" + e.data.sku + "</td><td>" + e.data.name + "</td><td>" + e.data.price + "</td><td class='res' status='" + e.status_message +"'>" + e.status_message + "<br> (Server : " + e.loading_time +" s/ <br>Client : " + ((t/1000).toFixed(2)) + "s)</td></tr>");
             jQuery('.tr-please-wait').remove();
         // }
         if($dvdn == $dvsr){
