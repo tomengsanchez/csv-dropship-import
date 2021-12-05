@@ -57,6 +57,8 @@ function uploadcsv_files_test(){
                     array('Category','26'),
                     array('sku','2'),
                     array('description','8'),
+                    array('Sale Date','9'),
+                    array('Low Stock','15'),
                     array('regular_price','25'),
                     array('sale_price','24'),
                     array('item_group','36'),
@@ -68,6 +70,7 @@ function uploadcsv_files_test(){
                     array('width','20'),
                     array('height','21'),
                     array('image','29'),
+                    array('Other Categories','56'),
                 );
                 get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data);
             }
@@ -81,14 +84,6 @@ function uploadcsv_files_test(){
 }
 
 function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
-
-
-    $remove_this_attrib = [
-        'Pcs',
-        'kg',
-        'pcs'
-    ];
-
     header("Content-Type:application/json");
     $prd = new DSI_Products();
     $csv = $_FILES['csv_file']['tmp_name'];// File NAme
@@ -110,7 +105,7 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
 
     $prd->read_csv_lines($fo);
     $lns = $prd->data_per_lines;
-
+    
     $variation_parents = array();
     $data_lines = array();
     $transient_lines = [];
@@ -119,10 +114,7 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
         array_push($variation_parents,$lns[$l-1][3] ."wci_split".$lns[$l-1][2]);
         $transient_lines[] = $data_lines;
     }
-    set_transient('dsi_trans_idropship',$data_lines);
-    //ar_to_pre($data_lines);
-
-    //Play with Collected SKU then convert them into    \
+    
     $variation_parents_title = array();
     $variation_parents_processed = array();
     $variations = array();
@@ -136,9 +128,7 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
     }
     $variation_parents_processed = array_unique($variation_parents_processed);
     $variation_parents_processed_with_final_parent_name = array();
-    $variation_parents_processed_with_title_names = array();
-
-   
+    
     foreach($variation_parents_processed as $vpp){
         $title = '';
         foreach($variations as $v){
@@ -254,15 +244,12 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
         $attr_string = rtrim($attr_string,'|');
         $attr_string = ltrim($attr_string,'|');
         $variation_attributes_terms[$key] = $attr_string;
-        
     }
     
     //make variation parents unique
     
     $upload_mapping = array();  
-    //if(!get_transient('dsi_trans_data_lines_idropship')){
-        //set_transient('dsi_trans_data_lines_idropship',$data_lines,0);
-    //}
+    
     for($x = 1; $x <= count($sample_data) ; $x++){
         $csv_value = $prd->data_per_lines[0][$sample_data[$x-1][1]];
         $sample_csv = $prd->data_per_lines[0][$sample_data[$x-1][1]];
@@ -291,7 +278,7 @@ function get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data){
     if(!in_array($name_heading, $prd->valid_name_heading)){
         $data_lines = array();
     }
-    $script = '';
+    //$script = '';
     echo json_encode([
         'row'=>$upload_mapping,
         'script'=> $script,
@@ -734,6 +721,8 @@ function get_field_then_import_idropship(){
     $image = $_POST['lines'][29];
     $stock = $_POST['lines'][14];
     $category = $_POST['lines'][26];
+    $sale_date = $_POST['lines'][9];
+    $low_stock = $_POST['lines'][15];
     $thumbnail1 = '';
     $action = '';
     $product_type = 'simple';
@@ -753,6 +742,8 @@ function get_field_then_import_idropship(){
     
     $prd = new DSI_Products();
     $update_id = '';
+    //array_push($category,$_POST['lines'][56]);
+    $category .= "," . $_POST['lines'][56];
     $categories = $prd->category_manipulation_nested($category);
     
     //product type
@@ -828,6 +819,7 @@ function get_field_then_import_idropship(){
                     $product = new WC_Product_Variable($variation_parents_id);
                     $product->set_name($variation_parent_title);
                     $product->set_sku($variation_parents_sku);
+                    $product->set_description($description);
                     $thumb_id = $prd->dsi_set_thumbnail($images[0]);
                     next($images);
                     $product->set_image_id($thumb_id);
@@ -949,7 +941,7 @@ function get_field_then_import_idropship(){
                 $simple = new WC_Product_Simple($update_id);
                 $simple->set_name($name);
                 //$variation->set_parent_id($variation_parents_id);
-
+                
                 $thumb_id = $prd->dsi_set_thumbnail($images[0]);
                 $simple->set_image_id($thumb_id);
                 $imgs_id = $prd->dsi_set_image_gallery($images);
@@ -959,7 +951,10 @@ function get_field_then_import_idropship(){
                 $simple->set_sale_price($sale_price);
                 $simple->set_sku($variants_child_sku);
                 $simple->set_category_ids($categories);
+                $simple->set_description($description);
                 $simple->set_manage_stock('yes');
+                $simple->set_date_on_sale_from($sale_date);
+                $simple->set_low_stock_amount($low_stock);
                 $simple->set_stock_quantity($stock);
                 $simple->set_height($height);
                 $simple->set_length($length);
@@ -987,7 +982,10 @@ function get_field_then_import_idropship(){
                 $variation->set_sale_price($sale_price);
                 $variation->set_sku($variants_child_sku);
                 $variation->set_category_ids($categories);
+                $variation->set_description($description);
                 $variation->set_manage_stock('yes');
+                $variation->set_date_on_sale_from($sale_date);
+                $variation->set_low_stock_amount($low_stock);
                 $variation->set_stock_quantity($stock);
                 $variation->set_height($height);
                 $variation->set_length($length);
@@ -1014,27 +1012,6 @@ function get_field_then_import_idropship(){
         
         $thumbnail1 = $images[0];
         
-        // $args = [
-        //     'name'=>$name,
-        //     'type' => $type,
-        //     'sku'=>$sku,
-        //     'post_parent'=>$variation_parents_id,
-        //     'price'=>$regular_price,
-        //     'sale_price'=>$sale_price,
-        //     'images'=>$images,
-        //     'description'=>$description,
-        //     'thumbnail'=>$thumbnail1,
-        //     'category'=> $categories,
-        //     'length'=>$length,
-        //     'width'=>$width,
-        //     'height'=>$height,
-        //     'weight'=>$weight,
-        //     'product_type' => $product_type
-        // ];
-
-        // global $wpdb;
-        // $table = $wpdb->prefix . "posts";
-        
         if($product_type == 'simple'){
             $simple = new WC_Product_Simple();
             $simple->set_name($name);
@@ -1048,9 +1025,12 @@ function get_field_then_import_idropship(){
             $simple->set_regular_price($regular_price);
             $simple->set_sale_price($sale_price);
             $simple->set_sku($variants_child_sku);
+            $simple->set_description($description);
             $simple->set_category_ids($categories);
             $simple->set_manage_stock('yes');
             $simple->set_stock_quantity($stock);
+            $simple->set_date_on_sale_from($sale_date);
+            $simple->set_low_stock_amount($low_stock);
             $simple->set_height($height);
             $simple->set_length($length);
             $simple->set_width($width);
@@ -1074,7 +1054,10 @@ function get_field_then_import_idropship(){
             $variation->set_sale_price($sale_price);
             $variation->set_sku($variants_child_sku);
             $variation->set_manage_stock('yes');
+            $variation->set_description($description);
             $variation->set_stock_quantity($stock);
+            $variation->set_date_on_sale_from($sale_date);
+            $variation->set_low_stock_amount($low_stock);
             $variation->set_height($height);
             $variation->set_length($length);
             $variation->set_width($width);
