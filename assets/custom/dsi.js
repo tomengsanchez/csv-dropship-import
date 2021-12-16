@@ -46,6 +46,7 @@ jQuery(document).ready(function(){
         jQuery('#csv_file').trigger('change');
     });
     jQuery('#csv_file').change(function(e){
+        line_counter = 0;
         e.preventDefault();
         //reset import status parameter
         
@@ -74,7 +75,7 @@ jQuery(document).ready(function(){
             success:function(res,s){
                 //alert(res);
                 
-                jQuery('#csv_ajax_table').html('LOADING...');
+                jQuery('#csv_ajax_table').html('Select Dropship Supplier');
 
                 if(jQuery('#dropship_company').val()=='aw-dropship'){
                     inline_form_table_json(res,jQuery('#csv_ajax_table'));
@@ -101,7 +102,19 @@ jQuery(document).ready(function(){
                         }
                     });
                 }
-                
+                if(jQuery('#dropship_company').val()=='dropshipzone'){
+                    
+                    inline_form_table_json(res,jQuery('#csv_ajax_table'));
+                    jQuery.ajax({
+                        url:locsData.admin_url+'admin-ajax.php?action=get_ajax_script_main_page',
+                        cache:false,
+                        success:function(ajs){
+                            // ajs = ajs.replace(/\s/g, '');
+                            jQuery('#csv_ajax_table').before(ajs);
+                            //jQuery('#csv_ajax_table').append(ajs);
+                        }
+                    });
+                }
                 // if(!res.message)
                 //     jQuery('#csv_ajax_table').html('12');
                 // else

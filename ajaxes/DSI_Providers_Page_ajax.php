@@ -117,6 +117,9 @@ add_action('wp_ajax_delete_all_products',function(){
     $wpdb->query("DELETE FROM wp_postmeta WHERE post_id IN (SELECT ID FROM wp_posts WHERE post_type IN ('product','product_variation'))");
     $wpdb->query("DELETE FROM wp_posts WHERE post_type IN ('product','product_variation')");
     $wpdb->query("DELETE pm FROM wp_postmeta pm LEFT JOIN wp_posts wp ON wp.ID = pm.post_id WHERE wp.ID IS NULL");
+
+    
+
     echo "All Products are Deleted";
     exit();
 });

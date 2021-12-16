@@ -38,8 +38,10 @@ use Automattic\WooCommerce\Admin\API\Products;
                 <td><label for="dropship_company">Select Dropship Supplier</label></td>
                 <td>
                     <select name="dropship_company" id="dropship_company">
+                        <option selected value=''>Please Select</option>
                         <option value='aw-dropship'>AW DROPSHIP</option>
-                        <option selected value='idropship'>i Dropship</option>
+                        <option value='idropship'>i Dropship</option>
+                        <option value='dropshipzone'>Dropship Zone</option>
                     </select>
                 </td>
 
@@ -63,207 +65,63 @@ use Automattic\WooCommerce\Admin\API\Products;
 
 <hr>
     <?php  
+        $sku = 'JC1051-L-PN';
+        $x = explode('-',$sku);
+        print_r($x);
 
-    global $wpdb;
-    $attrib_id= $GLOBALS['wpdb']->get_results("SELECT * FROM {$wpdb->prefix}woocommerce_attribute_taxonomies WHERE attribute_label ='Variations' ");
 
-    //ar_to_pre($attrib_id);
-    //echo $attrib_id[0]->attribute_id;
-    //print_r($attrib_id);
-    //$wch = new WC_Helper();
-    
-    // Objectives ...Remove the attribute from the each names to make the parent_title.
-    // Use these 3 sample scenarios of names
-    // Parent for 1. 'DreamZ Fitted Waterproof Mattres Protectr with Ramboo Filbre Cover'
-    //$parent_title = '';
-    
-    $names = array(
-        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Single Size',
-        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Double Size',
-        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover King Size',
-        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover King Single',
-        'DreamZ Fitted Waterproof Mattress Protector with Bamboo Fibre Cover Queen Size'
-    );
 
-    // Parent  for 2. 'Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Cord Globes'
-    $names1 = array(
-        '3-5 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes',
-        '5-7 kg Himalayan Salt Lamp Rock Crystal Natural Light Dimmer Switch Cord Globes'
-    );
-    // Parent  for 2. 'Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics'
-    $names1 = [  
-        '4x1M Inflatable Air Track Mat Tumbling Pump Floor Home Gymnastics Gym in Red',
-        '5x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
-        '5x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
-        '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics',
-        '6x1M Air Track Inflatable Mat Airtrack Tumbling Electric Air Pump Gymnastics'
-    ];
-
-    $names = [
-        "Levede Bed Frame Double King Fabric With Drawers Storage Wooden Mattress Grey",
-        "Levede Bed Frame King Fabric With Drawers Storage Beige",
-        "Levede Bed Frame Double King Fabric With Drawers Storage Wooden Mattress Grey",
-        "Levede Bed Frame  Queen Fabric With Drawers Storage Wooden Mattress Beige"
-    ];
-
-    /** Collect the occurence */
-    $names_array = array();
-    foreach($names as $nms){
-        foreach(explode(' ',$nms) as $removed_spaces){
-            array_push($names_array,$removed_spaces);
-        }
-    }    
-    
-    $names_array_unique = array_unique($names_array);
-    // ar_to_pre($names_array);
-    // ar_to_pre($names_array_unique);
-    //get the occurence of an array;
-    $name_occurances = array();
-    foreach ($names_array_unique as $nau){
-        $name_occurances[$nau] = 0;
-        foreach($names_array as $na){
-            if($na == $nau){
-                $name_occurances[$nau] = $name_occurances[$nau]+1;
-            }    
-        }
-    }
-    //ar_to_pre($name_occurances);
-
-    /** SAME */
-    //$titles = array();
-//    $collected_titles = array();
-    $sliced_word = array();    
-    foreach($names as $n){
-        $namesexp = explode(' ',$n);
-        array_push($sliced_word, $namesexp);
-    }
-    
-    $collected_words = array();
-    
-    $occurence_counter = 0;
-    $collected_words_with_counter = array();
-
-    foreach($sliced_word as $sw){
-        for($s = 0; $s < count($sw);$s++){
-            array_push($collected_words,current($sw). "-" . $s);
-            $collected_words_with_counter[current($sw). "-" . $s] = 0;
-            next($sw);
-        }
-        
-    }
-    //loop collected words.
-    foreach($collected_words as $cw){
-        //check if each collected words are in the keys of collected words with counter.
-        foreach($collected_words_with_counter as $key => $val){
-            if($key == $cw){
-                $val = $val+1;
-                $collected_words_with_counter[$key] = $val;
-            }
-        }
-    }
-
-    //ksort($collected_words_with_counter);
-     //ar_to_pre($collected_words_with_counter);
-    $arrange_word = array();
-    $arrange_index = array();
-    //delete words that do not appear often
-    for($x = round(count($names)); $x<= count($names) ; $x++){
-        foreach($collected_words_with_counter as $ky => $vl){
-            if($vl == $x){
-                //echo $ky . "-" . $vl . "<br>";
-                array_push($arrange_index, $ky);            
-            }
-        }
-    }
-    //ar_to_pre($arrange_index);
-    $new_ar = array();
-    $ptitle = '';
-    for($s = 0; $s < count($arrange_index); $s++){
-        for($b = 0; $b <= count($arrange_index); $b++){
-            if(explode('-',$arrange_index[$s])[1] == $b){
-                $new_ar[explode('-',$arrange_index[$s])[1]] = explode('-',$arrange_index[$s])[0];
-            }
-        }
-    }
-    
-    
-
-    foreach($new_ar as $nval){
-        $ptitle .= $nval. " ";
-    }
-
-    //echo $parent_title = rtrim($ptitle);//Final
-
-    //echo "<hr>";
-    // $sku = 'BF1012-MAIN';
-    
-    // $parent_id = '526';
-    // $product = new WC_Product_Variable('526');
-    // $ar = $product->get_attributes()['variations']['data']['options'];
-    
-    // $attribute = new WC_Product_Attribute();
-    //         //$attribute->set_id(0);
-    // $attribute->set_name('Variations');
-    // array_push($ar,'Tomeng12');
-    // ar_to_pre($ar);
-    // $attribute->set_options($ar);
-    // $attribute->set_visible(true);
-    // $attribute->set_variation(true);
-    
-    // $product->set_attributes(array($attribute));
-    //array_push($ar,'tomeng');
-    //$product->save();
-    //$product->save();
-    $q_get_existing = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="AC207"';
-    $p = $GLOBALS['wpdb']->get_results($q_get_existing);
-    ar_to_pre($p[0]->post_id);
     ?>
-
-<div class='dsi-row' >
-    <input type='hidden' class='loop-counter' value='0'>
-    <div class="dsi-col">
-    <h2 style='padding-left:35px'>IMPORT PARAMETERS</h2>
-        <div class='csv-import-table-div' id='csv_ajax_table'></div>
-    </div>
-    <div class="dsi-col" style='min-height:400px'>
-    <h2 style='padding-left:20px'>IMPORT STATUS</h2>
-        <?php 
+<!-- <div class="container"> -->
+    <div class='dsi-row row' >
+        <input type='hidden' class='loop-counter' value='0'>
+        <div class="dsi-col col-sm-6">
+        <h2 style='padding-left:35px'>IMPORT PARAMETERS</h2>
+            <div class="container">
+                <div class='csv-import-table-div row' id='csv_ajax_table'></div >
+            </div>
             
-        ?>
-        <script >
-            jQuery(document).ready(function(){
-                jQuery( "#progressbar" ).progressbar();
-            }); 
-            jQuery('.progress').change(function(){
-                alert(1);
-            });
-        </script>
-        <div class="import-result" style='margin-top:118px'>
-            <input type='hidden' id='row_holder_finish'>
-            <input type='hidden' id='row_holder_start' value='0'>
-            <table width='600'>
-                <tr>
-                    <td width='300'><h3 style='padding-left:20px'><span class='import_files'>0</span> of <span class='read_files'>0</span > are Processed</h3></td>
-                    <td width='100'><h3><b>Progress : </b></h3></td>
-                    <td ><div style='width:200px' id='progressbar'></div></td>
-                </tr>
-            </table>
-            <table class='dsi-table'   id='dsi-summary-table' style='width:600px;background-color:white'>
-                <thead class='dsi-thead'>
-                    <tr class='first-tr'>
-                        <th>Sku</th>
-                        <th>Product Name</th>
-                        <th>Price</th>
-                        <th>Status</th>
+        </div>
+        <div class="dsi-col col-sm-6" style='min-height:400px'>
+        <h2 style='padding-left:20px'>IMPORT STATUS</h2>
+            <?php 
+            
+            ?>
+            <script >
+                jQuery(document).ready(function(){
+                    jQuery( "#progressbar" ).progressbar();
+                }); 
+                jQuery('.progress').change(function(){
+                    alert(1);
+                });
+            </script>
+            <div class="import-result" style='margin-top:118px'>
+                <input type='hidden' id='row_holder_finish'>
+                <input type='hidden' id='row_holder_start' value='0'>
+                <table width='600' class='table'>
+                    <tr>
+                        <td width='300'><h3 style='padding-left:20px'><span class='import_files'>0</span> of <span class='read_files'>0</span > are Processed</h3></td>
+                        <td width='100'><h3><b>Progress : </b></h3></td>
+                        <td ><div style='width:200px' id='progressbar'></div></td>
                     </tr>
-                    <tbody>
-                </thead>
-            </table>      
+                </table>
+                <table class='dsi-table table'   id='dsi-summary-table' style='width:600px;background-color:white'>
+                    <thead class='dsi-thead'>
+                        <tr class='first-tr'>
+                            <th>Sku</th>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                        <tbody>
+                    </thead>
+                </table>      
+            </div>
         </div>
     </div>
-</div>
-
+<!-- </div> -->
  <?php 
+
 
 //delete_transient('dsi_trans_idropship');
 //ar_to_pre(get_transient('dsi_trans_idropship'));

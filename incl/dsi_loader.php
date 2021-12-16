@@ -28,6 +28,8 @@ Class DSI_Loader{
 
         include_once  __DIR__ . "/../ajaxes/DSI_Providers_Page_ajax.php";
         include_once  __DIR__ . "/../ajaxes/Main-Page_ajax.php";
+        include_once  __DIR__ . "/../ajaxes/dropshipzone-ajax.php";
+        include_once  __DIR__ . "/../ajaxes/idropship-ajax.php";
         include_once  __DIR__ . "/../ajaxes/DSI_Settings_View_ajax.php";
         include_once  __DIR__ . "/ajaxes.php";
     }

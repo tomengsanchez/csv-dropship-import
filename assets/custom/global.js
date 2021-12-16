@@ -47,9 +47,16 @@ var line_counter = 0;
                         }
                     }
                 }
-                
+                if(jQuery('#dropship_company').val() == 'dropshipzone'){
+                    if(col_n == 25){
+                        col_head = data.row[r].split('wci_split')[0];
+                        if(col_head != ''){
+                            opt += '<option value="' + data.row[r].split('wci_split')[1] + '">'+ data.row[r].split('wci_split')[0] +'</option>';
+                        }
+                    }
+                }
         }
-        output += '<table>';
+        output += '<table style="padding 0px 0px 0px 50px">';
         output += '<tr>';
         output += '<td><span style="padding:0px 0px 0px 20px;">Skip Existing SKU</span></td>';
         output += '<td class="skip_existing_sku_td"><input type="checkbox" checked="checked" id="skip_existing_sku"></td>';
@@ -70,7 +77,7 @@ var line_counter = 0;
         output += '<td><button id="start_import" class"button">Start Import</button></td></td>';
         output += '</tr>';
         output += '</table>';
-        output += '<table class="dsi-table" id="#csv-field">';
+        output += '<table style="padding: 0px 0px 0px 300px" class="dsi-table table-responsive" id="#csv-field">';
         output += '<thead class="dsi-thead">';
         output += '<tr >';
         output += '<th width=100px>Product Field</th>';
@@ -176,8 +183,11 @@ function send_one_by_one_ajax(){
     if(jQuery('#dropship_company').val()== 'aw-dropship'){
         url_ = locsData.admin_url+'admin-ajax.php?action=get_field_then_import';
     }
-    else{
+    else if(jQuery('#dropship_company').val()== 'idropship'){
         url_ = locsData.admin_url+'admin-ajax.php?action=get_field_then_import_idropship';
+    }
+    else if(jQuery('#dropship_company').val()== 'dropshipzone'){
+        url_ = locsData.admin_url+'admin-ajax.php?action=get_field_then_import_dropshipzone';
     }
     trout = '';
 

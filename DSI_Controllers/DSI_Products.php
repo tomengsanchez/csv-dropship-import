@@ -33,6 +33,29 @@ class DSI_Products extends DSI_Loader{
         
     }           
     var $valid_name_heading = array('Name','Unit Name');
+    var $valid_headings = [
+        'aw-dropship' => [
+            'Status',
+            'Product code',
+            'Product user reference',
+            "Family",	
+            "Barcode",	
+            "CPNP number",	 
+            "Price",	
+            "Units per outer",	
+            "Unit label",	
+            "Unit price",	
+            "Unit Name",	
+            "Unit RRP"
+
+        ],
+        'idropship'=>[
+            'NSW'
+        ],
+        'dropshipzone'=>[
+            'Attribute 3 global'
+        ]
+    ];
     var $wc_api;
     function get_all_wc_default_field(){
         $default_field = array(
@@ -168,7 +191,7 @@ class DSI_Products extends DSI_Loader{
      */
 
 
-    public function dsi_wc_product_simple($prod){
+    public function dsi_wc_product_simple($prod,$sku = ''){
         //ar_to_pre($prod);
         
 
@@ -202,7 +225,7 @@ class DSI_Products extends DSI_Loader{
         
         if($prod['thumbnail'] != null){
             $image_url        = $prod['thumbnail']; // Define the image URL here
-            $image_name       = 'main.png';
+            $image_name       = $sku . 'main.png';
             $upload_dir       = wp_upload_dir(); // Set upload folder
             $image_data       = file_get_contents($image_url); // Get image data
             $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
@@ -252,7 +275,7 @@ class DSI_Products extends DSI_Loader{
         if($prod['thumbnail2'] != null){
 
             $image_url        = $prod['thumbnail2']; // Define the image URL here
-            $image_name       = '2nd.png';
+            $image_name       = $sku . '-2nd.png';
             $upload_dir       = wp_upload_dir(); // Set upload folder
             $image_data       = file_get_contents($image_url); // Get image data
             $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
@@ -333,7 +356,7 @@ class DSI_Products extends DSI_Loader{
         //ar_to_pre($objProduct);
     }
 
-    public function dsi_wc_product_simple_update($prod){
+    public function dsi_wc_product_simple_update($prod,$sku = ''){
 
         $objProduct = new WC_Product($prod['id']);
         $objProduct->set_name($prod['name']);
@@ -363,7 +386,7 @@ class DSI_Products extends DSI_Loader{
         
         if($prod['thumbnail'] != null){
             $image_url        = $prod['thumbnail']; // Define the image URL here
-            $image_name       = 'main.png';
+            $image_name       = $sku . 'main.png';
             $upload_dir       = wp_upload_dir(); // Set upload folder
             $image_data       = file_get_contents($image_url); // Get image data
             $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
@@ -415,7 +438,7 @@ class DSI_Products extends DSI_Loader{
         if($prod['thumbnail2'] != null ){
 
             $image_url        = $prod['thumbnail2']; // Define the image URL here
-            $image_name       = '2nd.png';
+            $image_name       =  $sku. '-2nd.png';
             $upload_dir       = wp_upload_dir(); // Set upload folder
             $image_data       = file_get_contents($image_url); // Get image data
             $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
@@ -614,12 +637,12 @@ class DSI_Products extends DSI_Loader{
         $this->dsi_product_update_category($product_id,$args['category']);
 
         //insert thumbnail
-        $thumbnail_id = $this->dsi_set_thumbnail($args['thumbnail']);
+        $thumbnail_id = $this->dsi_set_thumbnail($args['thumbnail'],$args['sku']);
         $this->dsi_product_update_meta( $post_id, '_thumbnail_id', $thumbnail_id );
 
         //insert gallery images
         
-        $images_ids = $this->dsi_set_image_gallery($args['images']);
+        $images_ids = $this->dsi_set_image_gallery($args['images'],$args['sku']);
         $images = implode(",",$images_ids);
         $this->dsi_product_update_meta( $post_id, '_product_image_gallery', $images );
             
@@ -640,6 +663,7 @@ class DSI_Products extends DSI_Loader{
         $this->dsi_product_update_meta( $post_id, '_length', $args['length'] );
         $this->dsi_product_update_meta( $post_id, '_width', $args['width'] );
         $this->dsi_product_update_meta( $post_id, '_height', 0 );
+        $this->dsi_product_update_meta( $post_id, '_images', $args['thumbnail']);
         $this->dsi_product_update_meta( $post_id, '_product_attributes', array() );
         $this->dsi_product_update_meta( $post_id, 'sale_price_dates_from', '' );
         $this->dsi_product_update_meta( $post_id, 'sale_price_dates_to', '' );
@@ -648,6 +672,7 @@ class DSI_Products extends DSI_Loader{
         $this->dsi_product_update_meta( $post_id, '_manage_stock', 'no' );
         $this->dsi_product_update_meta( $post_id, '_backorders', 'no' );
         $this->dsi_product_update_meta( $post_id, '_stock', '' );
+        return $post_id;
     }
     /**
      * Function update Raw SQL
@@ -727,7 +752,7 @@ class DSI_Products extends DSI_Loader{
         
         $this->dsi_product_update_meta( $post_id, '_product_image_gallery', $images );
             
-        $this->dsi_product_update_meta($product_id,'_sku',$args['sku']);
+        //$this->dsi_product_update_meta($product_id,'_sku',$args['sku']);
         $this->dsi_product_update_meta($product_id,'_price',$args['price']);
         
         $this->dsi_product_update_meta( $post_id, '_visibility', 'visible' );
@@ -816,12 +841,12 @@ class DSI_Products extends DSI_Loader{
     /** 
      * Manually Set the image
      */
-    function dsi_set_thumbnail($thumbnail){
+    function dsi_set_thumbnail($thumbnail,$sku = ''){
         // SET THUMBNAIL TO POST
         // Add Featured Image to Post
         if(!empty($thumbnail)){
             $image_url        = $thumbnail; // Define the image URL here
-            $image_name       = 'main.png';
+            $image_name       = $sku. '-main.png';
             $upload_dir       = wp_upload_dir(); // Set upload folder
             $image_data       = file_get_contents($image_url); // Get image data
             $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
@@ -873,7 +898,7 @@ class DSI_Products extends DSI_Loader{
      * 
      * @return $image_ids return as array of image Attachment Id
      */
-    function dsi_set_image_gallery($images){
+    function dsi_set_image_gallery($images,$sku = ''){
         // SET THUMBNAIL TO POST
         // Add Featured Image to Post
         
@@ -884,7 +909,7 @@ class DSI_Products extends DSI_Loader{
             
             if(!empty($images[$i])){
                 $image_url        = $images[$i]; // Define the image URL here
-                $image_name       = 'main.png';
+                $image_name       = $sku . 'main.png';
                 $upload_dir       = wp_upload_dir(); // Set upload folder
                 $image_data       = file_get_contents($image_url); // Get image data
                 $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name ); // Generate unique name
