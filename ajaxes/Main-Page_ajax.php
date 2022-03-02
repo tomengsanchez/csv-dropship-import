@@ -37,7 +37,7 @@ function uploadcsv_files_test(){
                     array('description','16'),
                     array('sku','1'),
                     array('description','16'),
-                    array('price','6'),
+                    array('price','11'),
                     array('weight','12'),
                     array('length','14'),
                     array('width','14'),
@@ -76,24 +76,25 @@ function uploadcsv_files_test(){
             }
             if($_POST['dropship_company'] == 'dropshipzone'){
                 $sample_data = array(
-                    array('name','3'),
+                    array('name','13'),
                     array('type','1'),
-                    array('description','16'),
-                    array('Category','25'),
-                    array('sku','2'),
-                    array('description','8'),
+                    array('description','14'),
+                    array('sku','0'),
+                    
                     array('Sale Date','9'),
-                    array('Low Stock','15'),
-                    array('regular_price','25'),
-                    array('sale_price','24'),
-                    array('item_group','36'),
-                    array('stock','14'),
-                    array('weight','17'),
-                    array('length','18'),
-                    array('width','19'),
-                    array('height','20'),
-                    array('image','28'),
-                    array('Other Categories','50'),
+                    array('image','15'),
+                    array('regular_price','1'),
+                    array('sale_price','2'),
+                    array('sale_date_start','3'),
+                    array('sale_date_end','4'),
+                    array('stock','6'),
+                    array('weight','9'),
+                    array('length','10'),
+                    array('width','11'),
+                    array('height','12'),
+                    array('Other Categories','16'),
+                    array('Parent Sku','17'),
+                    array('Parent Sku Title','18'),
                 );
                 get_csv_and_send_dropshipzone($csv_file,$wc_fields,$sample_data);
             }
@@ -193,7 +194,7 @@ function get_field_then_import(){
 
     //instatiate WC_PRODUCTs
     $prod_inst = new WC_Product();
-    $price = $_POST['lines'][6];
+    $price = $_POST['lines'][11];
 
     if($_POST['upload_images_yes'] == 'true'){
         $thumbnail1 = $_POST['lines'][23];

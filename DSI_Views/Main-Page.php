@@ -28,6 +28,25 @@ use Automattic\WooCommerce\Admin\API\Products;
 
 <?php 
     
+    $p = new WC_Product(89595);
+    //print_r($p);
+        $attachmentID= $p->get_image_id();
+    //wp_delete_attachment('34041', true);
+    $attachment_path = get_attached_file( $attachmentID); 
+    //Delete attachment from database only, not file
+    $delete_attachment = wp_delete_attachment($attachmentID, true);
+    //Delete attachment file from disk
+    $delete_file = unlink($attachment_path);
+    //delete all gallery images
+    $gallery_image_ids= $p->get_gallery_image_ids();
+    for($i = 0; $i <= count($gallery_image_ids) ; $i++){
+        $gallery_image_ids[$i];
+        $attachment_path = get_attached_file( $gallery_image_ids[$i]); 
+        //Delete attachment from database only, not file
+        $delete_attachment = wp_delete_attachment($gallery_image_ids[$i], true);
+        //Delete attachment file from disk
+        $delete_file = unlink($attachment_path);
+    }
 ?>
 <hr>
 
@@ -41,7 +60,7 @@ use Automattic\WooCommerce\Admin\API\Products;
                         <option selected value=''>Please Select</option>
                         <option value='aw-dropship'>AW DROPSHIP</option>
                         <option value='idropship'>i Dropship</option>
-                        <option value='dropshipzone'>Dropship Zone</option>
+                        <option selected value='dropshipzone'>Dropship Zone</option>
                     </select>
                 </td>
 
@@ -65,11 +84,10 @@ use Automattic\WooCommerce\Admin\API\Products;
 
 <hr>
     <?php  
-        $sku = 'JC1051-L-PN';
-        $x = explode('-',$sku);
-        print_r($x);
+        // $variable = new WC_Product_Variable(88647);
 
-
+        // ar_to_pre($variable->attributes['variants']['options']);
+        
 
     ?>
 <!-- <div class="container"> -->
@@ -120,6 +138,7 @@ use Automattic\WooCommerce\Admin\API\Products;
         </div>
     </div>
 <!-- </div> -->
+
  <?php 
 
 

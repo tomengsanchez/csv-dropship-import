@@ -15,7 +15,7 @@
  * Plugin Name:       Dropship Imports
  * Plugin URI:        https://github.com/tomengsanchez
  * Description:       Imports Dropship Using CSV 
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            Tomeng Sanchez Castle Jackson
  *
  * Author URI:        https://github.com/tomengsanchez

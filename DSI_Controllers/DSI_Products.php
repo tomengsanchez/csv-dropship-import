@@ -53,7 +53,7 @@ class DSI_Products extends DSI_Loader{
             'NSW'
         ],
         'dropshipzone'=>[
-            'Attribute 3 global'
+            'Post_Title'
         ]
     ];
     var $wc_api;
@@ -742,15 +742,22 @@ class DSI_Products extends DSI_Loader{
         $this->dsi_product_update_category($product_id,$args['category']);
 
         //insert thumbnail
-        $thumbnail_id = $this->dsi_set_thumbnail($args['thumbnail']);
-        $this->dsi_product_update_meta( $post_id, '_thumbnail_id', $thumbnail_id );
-
+        if(isset($args['thumbnail'])){
+            $thumbnail_id = $this->dsi_set_thumbnail($args['thumbnail']);
+            $this->dsi_product_update_meta( $post_id, '_thumbnail_id', $thumbnail_id );
+        }
         //insert gallery images
+        if(isset($args['images'])){
+            $images = $this->dsi_set_image_gallery($args['images']);
+            $images = implode(",",$images);
+            $this->dsi_product_update_meta( $post_id, '_product_image_gallery', $images );
+        }
 
-        $images = $this->dsi_set_image_gallery($args['images']);
-        $images = implode(",",$images);
         
-        $this->dsi_product_update_meta( $post_id, '_product_image_gallery', $images );
+
+        
+        
+        
             
         //$this->dsi_product_update_meta($product_id,'_sku',$args['sku']);
         $this->dsi_product_update_meta($product_id,'_price',$args['price']);
