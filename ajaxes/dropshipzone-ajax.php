@@ -249,7 +249,8 @@ function get_field_then_import_dropshipzone(){
     $variable_sku = $_POST['lines']['17'];
     $variable_title = $_POST['lines']['18'];
     $image_array = explode(',',$image);
-    $xc = 0;                                                   
+    $xc = 0;
+    $prod_type = '';
     if($_POST['upload_images_yes'] == 'true'){
         foreach($image_array as $im){
             array_push($images,$im);
@@ -294,11 +295,17 @@ function get_field_then_import_dropshipzone(){
     if(count($product_existing) == 1){
         $existing = 1;
         $update_id = $product_existing[0]->post_id;
+        $prod_type = get_post($update_id)->post_type;
     }
     // will delete all attachment
     if($_POST['upload_images_yes'] == 'true'){
-            
-        $p = new WC_Product($update_id);
+        if($prod_type == 'product_variation'){
+            $p = new WC_Product_Variation($update_id);
+        }
+        else{
+            $p = new WC_Product($update_id);
+        }
+        
         //print_r($p);
             $attachmentID= $p->get_image_id();
         //wp_delete_attachment('34041', true);
@@ -392,6 +399,7 @@ function get_field_then_import_dropshipzone(){
         
         
         if($existing == 1){
+            
             $action = 'edit variation';
             $variation = new WC_Product_Variation($update_id);
             $variation->set_name($name);
@@ -427,6 +435,8 @@ function get_field_then_import_dropshipzone(){
             $variation->save();
         }
         else{
+            
+
             $action = 'insert variation';
             $variation = new WC_Product_Variation($update_id);
             $variation->set_name($name);
@@ -493,6 +503,7 @@ function get_field_then_import_dropshipzone(){
             'begin_sale' =>$sale_date,
             'end_sale' =>$sale_date_end
         ],
+        'prod_type'=>$prod_type,
         'db_data'=>$db_data,
         'action'=>$action,
         'status_message'=>$status_message, 
@@ -514,4 +525,5 @@ function get_field_then_import_dropshipzone(){
     }
     exit();
 }
+
 ?>
