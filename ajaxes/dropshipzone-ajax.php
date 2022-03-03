@@ -239,9 +239,28 @@ function get_field_then_import_dropshipzone(){
     $stock = $_POST['lines'][6];
     $category = $_POST['lines'][16];
     $sale_date = $_POST['lines'][3];
+    //the date format of csv is dd/mm/yyy time
+    // need to change it to mmm/dd/yyyy
+    $sale_date_time = explode(' ',$sale_date)[1];
+    $sale_date_date = explode(' ',$sale_date)[0];
+    $sale_date_month = explode('/',$sale_date_date)[1];
+    $sale_date_year = explode('/',$sale_date_date)[2];
+    $sale_date_day = explode('/',$sale_date_date)[0];
+    $sale_date = $sale_date_year . "/" . $sale_date_month . "/" . $sale_date_day . " " . $sale_date_time;
+
     $sale_date_end = $_POST['lines'][4];
-    $sale_date_end = explode(' ',$sale_date_end)[0];
-    //$low_stock = $_POST['lines'][15];
+
+    //$sale_date_end = explode(' ',$sale_date_end)[0];//final
+    //$low_stock = $_POST['lines'][15];000
+    
+    $sale_date_end_time = explode(' ',$sale_date_end)[1];
+    $sale_date_end_date = explode(' ',$sale_date_end)[0];
+    $sale_date_end_month = explode('/',$sale_date_end_date)[1];
+    $sale_date_end_year = explode('/',$sale_date_end_date)[2];
+    $sale_date_end_day = explode('/',$sale_date_end_date)[0];
+    $sale_date_end = $sale_date_end_year . "/" . $sale_date_end_month . "/" . $sale_date_end_day . " " . $sale_date_end_time;
+    
+
     $thumbnail1 = '';
     $action = '';
     $product_type = 'simple';
@@ -333,7 +352,7 @@ function get_field_then_import_dropshipzone(){
         //insert/update as simple
 
         $action = 'Create Simple Product';
-        $simple = new WC_Product_Simple();
+        $simple = new WC_Product_Simple($update_id);
         $simple->set_name($name);
         //$variation->set_parent_id($variation_parents_id);
         $thumb_id = $prd->dsi_set_thumbnail($images[0],$sku);
@@ -421,6 +440,7 @@ function get_field_then_import_dropshipzone(){
             $variation->set_description($description);
             $variation->set_manage_stock('yes');
             $variation->set_date_on_sale_from($sale_date);
+            $variation->set_date_on_sale_to($sale_date_end);
             $variation->set_low_stock_amount($low_stock);
             $variation->set_stock_quantity($stock);
             $variation->set_height($height);
@@ -455,6 +475,7 @@ function get_field_then_import_dropshipzone(){
             $variation->set_description($description);
             $variation->set_manage_stock('yes');
             $variation->set_date_on_sale_from($sale_date);
+            $variation->set_date_on_sale_from($sale_date_end);
             $variation->set_low_stock_amount($low_stock);
             $variation->set_stock_quantity($stock);
             $variation->set_height($height);
