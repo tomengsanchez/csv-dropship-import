@@ -407,7 +407,7 @@ function get_field_then_import_dropshipzone(){
             $var_options = $product->attributes['variants']['options'];
             array_push($var_options,$name);
             $attribute->set_options($var_options);
-            $attribute->set_visible(true);
+            $attribute->set_visible(false);
             $attribute->set_variation(true);
             
             $product->set_attributes(array($attribute));
@@ -500,7 +500,7 @@ function get_field_then_import_dropshipzone(){
         $var_options = $var_att_update->attributes['variants']['options'];
         array_push($var_options,$name);
         $attribute->set_options($var_options);
-        $attribute->set_visible(true);
+        $attribute->set_visible(false);
         $attribute->set_variation(true);
         
         $var_att_update->set_attributes(array($attribute));

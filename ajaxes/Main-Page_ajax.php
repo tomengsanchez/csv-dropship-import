@@ -71,6 +71,8 @@ function uploadcsv_files_test(){
                     array('height','21'),
                     array('image','29'),
                     array('Other Categories','56'),
+                    array('Parent Sku','57'),
+                    array('Parent Name','58'),
                 );
                 get_csv_and_send_idropship($csv_file,$wc_fields,$sample_data);
             }

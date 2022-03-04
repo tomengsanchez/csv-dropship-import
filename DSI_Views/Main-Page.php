@@ -49,6 +49,14 @@ use Automattic\WooCommerce\Admin\API\Products;
     //     //Delete attachment file from disk
     //     $delete_file = unlink($attachment_path);
     // }
+    global $wpdb;
+//     $wpdb->query("DELETE FROM wp_terms WHERE term_id IN (SELECT term_id FROM wp_term_taxonomy WHERE taxonomy LIKE 'pa_%')");
+// $wpdb->query("DELETE FROM wp_term_taxonomy WHERE taxonomy LIKE 'pa_%'");
+// $wpdb->query("DELETE FROM wp_term_relationships WHERE term_taxonomy_id not IN (SELECT term_taxonomy_id FROM wp_term_taxonomy)");
+// $wpdb->query("DELETE FROM wp_term_relationships WHERE object_id IN (SELECT ID FROM wp_posts WHERE post_type IN ('product','product_variation'))");
+// $wpdb->query("DELETE FROM wp_postmeta WHERE post_id IN (SELECT ID FROM wp_posts WHERE post_type IN ('product','product_variation'))");
+// $wpdb->query("DELETE FROM wp_posts WHERE post_type IN ('product','product_variation')");
+// $wpdb->query("DELETE pm FROM wp_postmeta pm LEFT JOIN wp_posts wp ON wp.ID = pm.post_id WHERE wp.ID IS NULL");
 ?>
 <hr>
 
@@ -61,8 +69,8 @@ use Automattic\WooCommerce\Admin\API\Products;
                     <select name="dropship_company" id="dropship_company">
                         <option selected value=''>Please Select</option>
                         <option value='aw-dropship'>AW DROPSHIP</option>
-                        <option value='idropship'>i Dropship</option>
-                        <option selected value='dropshipzone'>Dropship Zone</option>
+                        <option selected value='idropship'>i Dropship</option>
+                        <option  value='dropshipzone'>Dropship Zone</option>
                     </select>
                 </td>
 

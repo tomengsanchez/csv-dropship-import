@@ -230,6 +230,9 @@ function get_field_then_import_idropship(){
     $product_type = 'simple';
     $images = array();
     $image_array = explode(',',$image);
+    $variable_sku = $_POST['lines'][57];
+    $variable_title = $_POST['lines'][58];
+
     $xc = 0;                                                   
     if($_POST['upload_images_yes'] == 'true'){
         foreach($image_array as $im){
@@ -265,31 +268,8 @@ function get_field_then_import_idropship(){
     $variation_parent = '';
     $variation_attributes = '';
     
-    $variation_parent_title = '';
-    if(in_array($sku_0, $_POST['variation_parents_'])){
-        $product_type = 'variable';
-        $variation_parent = $sku_0;
-        $variation_parent_title = $_POST['variation_parents_with_title_'][$variation_parent];
-        $name_exp = array();
-        $name_exp = explode($variation_parent_title,$name);
-
-        $variation_attributes = $name_exp;
-        $variation_attributes = implode('',$name_exp);
-        $variation_attributes = ltrim($variation_attributes);
-        $variation_attributes = trim($variation_attributes);
-    }
     
-    // $variation_parents_id = '';
-
-    // $attrib_id= $GLOBALS['wpdb']->get_results("SELECT * FROM " . $wpdb->prefix ."woocommerce_attribute_taxonomies WHERE attribute_label ='Variations' ");
     
-    // $parent_attribute_id = '';
-    // if(count($attrib_id) ==0 ){
-    //     //echo "Create Attributes-";
-    //     $parent_attribute_id =  $prd->dsi_create_product_attribute('Variations');
-    // }else{
-    //     $parent_attribute_id = $attrib_id[0]->attribute_id;
-    // }
     $q_get_existing = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="' . $sku . '" AND meta_key ="_sku"';
     $product_existing = $GLOBALS['wpdb']->get_results($q_get_existing);
     $existing = 0;
@@ -298,366 +278,101 @@ function get_field_then_import_idropship(){
         $update_id = $product_existing[0]->post_id;
     }
 
-    $variation_parents_sku = $prd->process_variation_parent($sku,$_POST['variation_parents_'],$_POST['lines']);
-    $variation_parents_loop = wc_get_products([
-        'sku'=>$variation_parents_sku
-    ]);
+    if($variable_sku == ''){// IF has no parent skue\
+        //insert/update as simple
 
-    if($product_type == 'variable' ){
-    
-        //echo $variation_parents_id;
+        $action = 'Create Simple Product';
+        $simple = new WC_Product_Simple($update_id);
+        $simple->set_name($name);
+        //$variation->set_parent_id($variation_parents_id);
+        $thumb_id = $prd->dsi_set_thumbnail($images[0],$sku);
+        $simple->set_image_id($thumb_id);
+        $imgs_id = $prd->dsi_set_image_gallery($images,$sku);
+        $imgs_id_imp = implode(',', $imgs_id);
+        $simple->set_gallery_image_ids($imgs_id_imp);
+        $simple->set_regular_price($regular_price);
+        $simple->set_sale_price($sale_price);
+        $simple->set_sku($sku);
+        $simple->set_description($description);
+        $simple->set_category_ids($categories);
+        $simple->set_manage_stock('yes');
+        $simple->set_stock_quantity($stock);
+        $simple->set_date_on_sale_from($sale_date);
+        $simple->set_date_on_sale_to($sale_date_end);
+        $simple->set_low_stock_amount($low_stock);
+        $simple->set_height($height);
+        $simple->set_length($length);
+        $simple->set_width($width);
+        $simple->set_weight($weight);
+        $simple->set_downloadable('no');
         
-        if($variation_parents_loop == null){
-            //VARIABLE
-            if($existing == 1){
-                if($_POST['skip_existing_sku_yes']=='false'){
-                    
-                    $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
-                    $d = $GLOBALS['wpdb']->get_results($q);
-                    $variation_parents_id = $d[0]->post_id;
+        $simple->set_virtual('no');
+        $simple->set_stock_status('instock');
+        $simple->set_attributes(array('variants' => $name . ":" .  $sku) );
+        $simple->save();
 
-                    if($_POST['upload_images_yes'] == 'true'){
-                        //delete_ main image
-                        $p = new WC_Product($variation_parents_id);
-                        $attachmentID= $p->get_image_id();
-                        //wp_delete_attachment('34041', true);
-                        $attachment_path = get_attached_file( $attachmentID); 
-                        //Delete attachment from database only, not file
-                        $delete_attachment = wp_delete_attachment($attachmentID, true);
-                        //Delete attachment file from disk
-                        $delete_file = unlink($attachment_path);
-                        //delete all gallery images
-                        $gallery_image_ids= $p->get_gallery_image_ids();
-        
-                    }
-                    
-                    $product = new WC_Product_Variable($variation_parents_id);
-                    $product->set_name($variation_parent_title);
-                    $product->set_sku($variation_parents_sku);
-                    $product->set_short_description($description);
-                    $product->set_description($description);
-                    $thumb_id = $prd->dsi_set_thumbnail($images[0],$sku);
-                    next($images);
-                    $product->set_image_id($thumb_id);
-                    $imgs_id = $prd->dsi_set_image_gallery($images,$sku);
-                    $imgs_id_imp = implode(',', $imgs_id);
-                    $product->set_gallery_image_ids($imgs_id_imp);
-                    $attribute = new WC_Product_Attribute();
-                    $attribute->set_id(0);
-                    $attribute->set_name('variants');
-                    $vp_sku = rtrim($variation_parents_sku,'-MAIN');
-                    $attribute->set_options(explode(WC_DELIMITER, $_POST['variation_attribute_terms_'][$vp_sku]));
-                    
-                    $product->set_category_ids($categories);
-                    $attribute->set_visible(true);
-                    $attribute->set_variation(true);
-                    
-                    $product->set_attributes(array($attribute));
-                    
-                    $product->save();
-                }
-            }
-            else{
-                /** INSERT SCRIPT */
-                $variation_parent_title;
-                $parent_args = [
-                    'name'=>$variation_parent_title,
-                    'sku'=>$variation_parents_sku,
-                    'category'=>$categories
-                ];
-                $variation_parents_id = $prd->insert_new_variation_parent($parent_args);
-
-                $product = new WC_Product_Variable($variation_parents_id);
-                $thumb_id = $prd->dsi_set_thumbnail($images[0],$sku);
-                next($images);
-                $product->set_image_id($thumb_id);
-                $imgs_id = $prd->dsi_set_image_gallery($images,$sku);
-                $imgs_id_imp = implode(',', $imgs_id);
-                $product->set_gallery_image_ids($imgs_id_imp,$sku);
-                $product->set_description($description);
-                $attribute = new WC_Product_Attribute();
-                $attribute->set_id(0);
-                $attribute->set_name('variants');
-                $vp_sku = str_replace('-MAIN','',$variation_parents_sku);
-                $attribute->set_options(explode(WC_DELIMITER, $_POST['variation_attribute_terms_'][$vp_sku]));
-                
-                $product->set_category_ids($categories);
-                $attribute->set_visible(true);
-                $attribute->set_variation(true);
-                
-                $product->set_attributes(array($attribute));
-                
-                $variation_parents_id=$product->save();
-
-                $updated_parents = get_transient('updated_parent');
-                $updated_parents .= $variation_parents_id. ",";
-                set_transient('updated_parent',$updated_parents);
-            }
-            
-
-            $product = new WC_Product_Variable($variation_parents_id);
-            if($existing == 1){
-                if($_POST['skip_existing_sku_yes']=='false'){
-                    $product->set_name($variation_parent_title);
-                    $product->set_sku($variation_parents_sku);
-                }
-            }
-            
-            $teststring = 'Insert Parent';
-        }
-        else{
-            $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
-            $d = $GLOBALS['wpdb']->get_results($q);
-            $variation_parents_id = $d[0]->post_id; 
-            
-            $updated= get_transient('updated_parent');
-            $updated = rtrim($updated,',');
-            $exp_updated = explode(',',$updated);
-
-            if(!in_array($variation_parents_id,$exp_updated)){
-                $q = 'SELECT * FROM ' . $GLOBALS['wpdb']->prefix . 'postmeta WHERE meta_value="'  . $variation_parents_sku  . '"';
-                $d = $GLOBALS['wpdb']->get_results($q);
-                $variation_parents_id = $d[0]->post_id;
-                if($_POST['upload_images_yes'] == 'true'){
-                    //delete_ main image
-                    //echo "Update Parent and Insert Pictures Issue here";
-                    $p = new WC_Product_Variable($variation_parents_id);
-                    $attachmentID= $p->get_image_id();
-                    //wp_delete_attachment('34041', true);
-                    $attachment_path = get_attached_file( $attachmentID); 
-                    //Delete attachment from database only, not file
-                    $delete_attachment = wp_delete_attachment($attachmentID, true);
-                    //Delete attachment file from disk
-                    $delete_file = unlink($attachment_path);
-                    //delete all gallery images
-                    $gallery_image_ids= $p->get_gallery_image_ids();
-
-                    for($i = 0; $i <= count($gallery_image_ids) ; $i++){
-                        $attachment_path = get_attached_file( $gallery_image_ids[$i]); 
-                        //Delete attachment from database only, not file
-                        $delete_attachment = wp_delete_attachment($gallery_image_ids[$i], true);
-                        //Delete attachment file from disk
-                        $delete_file = unlink($attachment_path);
-                    }
-    
-                }
-                //echo "Update Variable sa BABA : ". $variation_parents_id .":"; 
-                
-                $product = new WC_Product_Variable($variation_parents_id);
-                $product->set_name($variation_parent_title);
-                $product->set_sku($variation_parents_sku);
-                $product->set_short_description($description);
-                $product->set_description($description);
-                
-                $thumb_id = $prd->dsi_set_thumbnail($images[0],$sku);
-                $product->set_image_id($thumb_id);
-
-                $imgs_id = $prd->dsi_set_image_gallery($images,$sku);
-                $imgs_id_imp = implode(',', $imgs_id);
-                $product->set_gallery_image_ids($imgs_id_imp);
-                $attribute = new WC_Product_Attribute();
-                $attribute->set_id(0);
-                $attribute->set_name('variants');
-                $vp_sku = rtrim($variation_parents_sku,'-MAIN');
-                $attribute->set_options(explode(WC_DELIMITER, $_POST['variation_attribute_terms_'][$vp_sku]));
-                
-                $product->set_category_ids($categories);
-                $attribute->set_visible(true);
-                $attribute->set_variation(true);
-                
-                $product->set_attributes(array($attribute));
-                
-                $product->save();
-                
-                $updated_parents = get_transient('updated_parent');
-                $updated_parents .= $variation_parents_id. ",";
-                set_transient('updated_parent',$updated_parents);
-            }
-            else{
-                
-            }
-        }
     }
-    
-    
-    // // work with categories
-
-    // //$images = array();
-    $variants_child_sku = $sku;
-
-    // $xc = 0;
-    
-    if($existing == 1){ // IF SKU IS 
-        $action = 'update';
-        //exit();
-        if($_POST['skip_existing_sku_yes']=='false'){
-            
-            $args = [
-                'id'=> $update_id,
-                'name'=>$name,
-                'sku'=>$sku,
-                'price'=>$regular_price,
-                'sale_price'=>$sale_price,
-                'images'=>$images,
-                'thumbnail'=> $thumbnail1,
-                'description'=>$description,
-                'category'=> $categories,
-                'length'=>$length,
-                'width'=>$length,
-                'height'=>'0',
-                'weight'=>$weight,
-                'product_type' => $product_type
-
-            ];
-            //global $wpdb;
-
-            // $table = $wpdb->prefix. "posts";
-            if($product_type=='simple'){
-                if($_POST['upload_images_yes'] == 'true'){
+    else{//else
+        $action = 'Check Variable';
+        $variable_id = wc_get_product_id_by_sku($variable_sku);
                 
-                    $p = new WC_Product_Simple($update_id);
-                    //print_r($p);
-                     $attachmentID= $p->get_image_id();
-                    //wp_delete_attachment('34041', true);
-                    $attachment_path = get_attached_file( $attachmentID); 
-                    //Delete attachment from database only, not file
-                    $delete_attachment = wp_delete_attachment($attachmentID, true);
-                    //Delete attachment file from disk
-                    $delete_file = unlink($attachment_path);
-                    //delete all gallery images
-                    $gallery_image_ids= $p->get_gallery_image_ids();
-                    for($i = 0; $i <= count($gallery_image_ids) ; $i++){
-                        $gallery_image_ids[$i];
-                        $attachment_path = get_attached_file( $gallery_image_ids[$i]); 
-                        //Delete attachment from database only, not file
-                        $delete_attachment = wp_delete_attachment($gallery_image_ids[$i], true);
-                        //Delete attachment file from disk
-                        $delete_file = unlink($attachment_path);
-                    }
-                }
-
-                $simple = new WC_Product_Simple($update_id);
-                $simple->set_name($name);
-                //$variation->set_parent_id($variation_parents_id);
-                
-                $thumb_id = $prd->dsi_set_thumbnail($images[0],$sku);
-                $simple->set_image_id($thumb_id);
-                $imgs_id = $prd->dsi_set_image_gallery($images,$sku);
-                $imgs_id_imp = implode(',', $imgs_id);
-                $simple->set_gallery_image_ids($imgs_id_imp);
-                $simple->set_regular_price($regular_price);
-                $simple->set_sale_price($sale_price);
-                $simple->set_sku($variants_child_sku);
-                $simple->set_category_ids($categories);
-                $simple->set_description($description);
-                $simple->set_manage_stock('yes');
-                $simple->set_date_on_sale_from($sale_date);
-                $simple->set_low_stock_amount($low_stock);
-                $simple->set_stock_quantity($stock);
-                $simple->set_height($height);
-                $simple->set_length($length);
-                $simple->set_width($width);
-                $simple->set_weight($weight);
-                $simple->set_downloadable('no');
-                //$variation->set_stock_quantity($stock);
-                $simple->set_virtual('no');
-                $simple->set_stock_status('instock');
-                $simple->set_attributes(array('variants' => $name . ":" .  $sku) );
-                $simple->save();
-            }
-            else{
-                //$prd->update_product_raw_sql($table,$args);
-                $variation = new WC_Product_Variation($update_id);
-                $variation->set_name($name);
-                $variation->set_parent_id($variation_parents_id);
-
-                $thumb_id = $prd->dsi_set_thumbnail($images[0],$sku);
-                // $variation->set_image_id($thumb_id);
-                update_post_meta($update_id,'_thumbnail_id',$thumb_id);
-                // $imgs_id = $prd->dsi_set_image_gallery($images);
-                // $imgs_id_imp = implode(',', $imgs_id);
-                // $variation->set_gallery_image_ids($imgs_id_imp);
-                $variation->set_regular_price($regular_price);
-                $variation->set_sale_price($sale_price);
-                $variation->set_sku($variants_child_sku);
-                $variation->set_category_ids($categories);
-                $variation->set_description($description);
-                $variation->set_manage_stock('yes');
-                $variation->set_date_on_sale_from($sale_date);
-                $variation->set_low_stock_amount($low_stock);
-                $variation->set_stock_quantity($stock);
-                $variation->set_height($height);
-                $variation->set_length($length);
-                $variation->set_width($width);
-                $variation->set_weight($weight);
-                $variation->set_downloadable('no');
-                //$variation->set_stock_quantity($stock);
-                $variation->set_virtual('no');
-                $variation->set_stock_status('instock');
-                $variation->set_attributes(array('variants' => $name . ":" .  $sku) );
-                $variation->save();
-            }
-            
-
-            $status_message = 'Updated';
-        }
-        else{
-            $status_message = 'Skipped';
-        }
-    }
-    else{
-        /** INSERT SCRIPT */
-        $action = 'insert';
         
-        $thumbnail1 = $images[0];
-        
-        if($product_type == 'simple'){
+            $action = 'added variable';
+            $product = new WC_Product_Variable($variable_id);
+            $product->set_name($variable_title);
+            $product->set_sku($variable_sku);
+            $product->set_short_description($description);
+            $product->set_description($description);
             
-            $simple = new WC_Product_Simple();
-            $simple->set_name($name);
-            //$variation->set_parent_id($variation_parents_id);
+            $thumb_id = $prd->dsi_set_thumbnail($images[0],$variable_sku);
+            $product->set_image_id($thumb_id);
 
-            $thumb_id = $prd->dsi_set_thumbnail($images[0],$sku);
-            $simple->set_image_id($thumb_id);
-            $imgs_id = $prd->dsi_set_image_gallery($images,$sku);
+            $imgs_id = $prd->dsi_set_image_gallery($images,$variable_sku);
             $imgs_id_imp = implode(',', $imgs_id);
-            $simple->set_gallery_image_ids($imgs_id_imp);
-            $simple->set_regular_price($regular_price);
-            $simple->set_sale_price($sale_price);
-            $simple->set_sku($variants_child_sku);
-            $simple->set_description($description);
-            $simple->set_category_ids($categories);
-            $simple->set_manage_stock('yes');
-            $simple->set_stock_quantity($stock);
-            $simple->set_date_on_sale_from($sale_date);
-            $simple->set_low_stock_amount($low_stock);
-            $simple->set_height($height);
-            $simple->set_length($length);
-            $simple->set_width($width);
-            $simple->set_weight($weight);
-            $simple->set_downloadable('no');
-            //$variation->set_stock_quantity($stock);
-            $simple->set_virtual('no');
-            $simple->set_stock_status('instock');
-            $simple->set_attributes(array('variants' => $name . ":" .  $sku) );
-            $simple->save();
+            $product->set_gallery_image_ids($imgs_id_imp);
+            $attribute = new WC_Product_Attribute();
+            $attribute->set_id(0);
+            $attribute->set_name('variants');
 
-        }
-        else if($product_type == 'variable'){
-            $variation = new WC_Product_Variation();
+            $var_options = $product->attributes['variants']['options'];
+            array_push($var_options,$name);
+            $attribute->set_options($var_options);
+            $attribute->set_visible(false);
+            $attribute->set_variation(true);
+            
+            $product->set_attributes(array($attribute));
+            $variable_id = $product->save();        
+            
+            
+        
+        
+        
+        if($existing == 1){
+            
+            $action = 'edit variation';
+            $variation = new WC_Product_Variation($update_id);
             $variation->set_name($name);
-            $variation->set_parent_id($variation_parents_id);
-
-            $thumb_id = $prd->dsi_set_thumbnail($images[0],$sku);
-            $variation->set_image_id($thumb_id);
+            $variation->set_parent_id($variable_id);
+            
+            $prd_update = new DSI_Products();
+            $thumb_id = $prd_update->dsi_set_thumbnail($images[0],$sku);
+            // $variation->set_image_id($thumb_id);
+            update_post_meta($update_id,'_thumbnail_id',$thumb_id);
+            
+            //$variation->set_image_id($thumb_id);
+            // $imgs_id = $prd->dsi_set_image_gallery($images);
+            // $imgs_id_imp = implode(',', $imgs_id);
+            // $variation->set_gallery_image_ids($imgs_id_imp);
             $variation->set_regular_price($regular_price);
             $variation->set_sale_price($sale_price);
-            $variation->set_sku($variants_child_sku);
-            $variation->set_manage_stock('yes');
+            $variation->set_sku($sku);
+            $variation->set_category_ids($categories);
             $variation->set_description($description);
-            $variation->set_stock_quantity($stock);
+            $variation->set_manage_stock('yes');
             $variation->set_date_on_sale_from($sale_date);
+            $variation->set_date_on_sale_to($sale_date_end);
             $variation->set_low_stock_amount($low_stock);
+            $variation->set_stock_quantity($stock);
             $variation->set_height($height);
             $variation->set_length($length);
             $variation->set_width($width);
@@ -666,19 +381,74 @@ function get_field_then_import_idropship(){
             //$variation->set_stock_quantity($stock);
             $variation->set_virtual('no');
             $variation->set_stock_status('instock');
-            $variation->set_attributes(array('variants' => $name . ":" .  $sku) );
+            $variation->set_attributes(array('variants' => $name));
             $variation->save();
-
-            // The variation data
-            
-            //dsi_create_product_variation($variation_parents_id,$variation_data);
         }
+        else{
+            
+
+            $action = 'insert variation';
+            $variation = new WC_Product_Variation($update_id);
+            $variation->set_name($name);
+            $variation->set_parent_id($variable_id);
+            $prd_insert = new DSI_Products();
+            $thumb_id = $prd_insert->dsi_set_thumbnail($images[0],$sku);
+            // $variation->set_image_id($thumb_id);
+            $variation->set_image_id($thumb_id);
+            // $imgs_id = $prd->dsi_set_image_gallery($images);
+            // $imgs_id_imp = implode(',', $imgs_id);
+            // $variation->set_gallery_image_ids($imgs_id_imp);
+            $variation->set_regular_price($regular_price);
+            $variation->set_sale_price($sale_price);
+            $variation->set_sku($sku);
+            $variation->set_category_ids($categories);
+            $variation->set_description($description);
+            $variation->set_manage_stock('yes');
+            $variation->set_date_on_sale_from($sale_date);
+            $variation->set_date_on_sale_from($sale_date_end);
+            $variation->set_low_stock_amount($low_stock);
+            $variation->set_stock_quantity($stock);
+            $variation->set_height($height);
+            $variation->set_length($length);
+            $variation->set_width($width);
+            $variation->set_weight($weight);
+            $variation->set_downloadable('no');
+            //$variation->set_stock_quantity($stock);
+            $variation->set_virtual('no');
+            $variation->set_stock_status('instock');
+            $variation->set_attributes(array('variants' => $name));
+            $variation->save();
+        }
+
+        $var_att_update = new WC_Product_Variable($variable_id);
+        
+
+        $attribute = new WC_Product_Attribute();
+        $attribute->set_id(0);
+        $attribute->set_name('variants');
+
+        $var_options = $var_att_update->attributes['variants']['options'];
+        array_push($var_options,$name);
+        $attribute->set_options($var_options);
+        $attribute->set_visible(false);
+        $attribute->set_variation(true);
+        
+        $var_att_update->set_attributes(array($attribute));
+        $variable_id = $var_att_update->save();        
         
         
 
-        $status_message = 'Created';
-    }
-    $vp_sku = rtrim($variation_parents_sku,'-MAIN');
+    }   
+
+
+
+    
+
+    
+    // // work with categories
+
+    // //$images = array();
+    
     $endtime = microtime(true);
     echo json_encode([
         'data'=>[
@@ -698,17 +468,7 @@ function get_field_then_import_idropship(){
         'mark_up_value' => $_POST['mark_up_value'],
         'mark_up_perc' => $percent,
         'price_up'=> $regular_price,
-        'parent_attribute_id' => $parent_attribute_id,
         'media' => get_attached_media( '', $pid ),
-        'variation_parents_sku'=>$variation_parents_sku,
-        'variants_child_name'=> $name,
-        'variation_parent_id' => $variation_parents_id,
-        'variation_parent_title'=>$variation_parent_title,
-        'product_type' => $product_type,
-        'variants_child_sku' => $variants_child_sku,
-        'variation_attributes'=> $variation_attributes,
-        'attributes_id' => $parent_attribute_id,
-        'variation_attributes_terms'=>$_POST['variation_attribute_terms_'][$vp_sku],
         'teststring'=>$teststring,
         'loading_time'=> number_format($endtime - $starttime,2)
     ]);
