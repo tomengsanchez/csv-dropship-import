@@ -393,7 +393,7 @@ function get_field_then_import_dropshipzone(){
             $product->set_sku($variable_sku);
             $product->set_short_description($description);
             $product->set_description($description);
-            
+            $product->set_category_ids($categories);
             $thumb_id = $prd->dsi_set_thumbnail($images[0],$variable_sku);
             $product->set_image_id($thumb_id);
 
