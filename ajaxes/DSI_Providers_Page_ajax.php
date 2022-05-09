@@ -120,7 +120,36 @@ add_action('wp_ajax_delete_all_products',function(){
 
     
 
-    echo "All Products are Deleted";
+    echo "All Products and Images are Deleted";
+    
+    // function delete_cpt_attachments(){
+    
+        $attachments = get_posts( array(
+        'post_type' => 'attachment',						
+        'numberposts' =>-1,	 	  								
+            ));									
+            if ($attachments) {		 		
+                foreach ($attachments as $attachment){
+                      $parent_id = $attachment->post_parent;					
+                    if ( 'product' == get_post_type($parent_id) ) {
+                        $attachmentID = $attachment->ID;							
+                        $attachment_path = get_attached_file( $attachmentID); 					
+                        //Delete attachment from database only, not file
+                        $delete_attachment = wp_delete_attachment($attachmentID, true);
+                        //Delete attachment file from disk
+                        $delete_file = unlink($attachment_path);
+                    }				
+                    if ( 'product_variation' == get_post_type($parent_id) ) {
+                        $attachmentID = $attachment->ID;							
+                        $attachment_path = get_attached_file( $attachmentID); 					
+                        //Delete attachment from database only, not file
+                        $delete_attachment = wp_delete_attachment($attachmentID, true);
+                        //Delete attachment file from disk
+                        $delete_file = unlink($attachment_path);
+                    }				
+                }
+            }					
+    // }
     exit();
 });
 

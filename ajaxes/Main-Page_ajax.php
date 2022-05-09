@@ -26,6 +26,7 @@ function uploadcsv_files_test(){
         echo "ERROR";
     }
     else{
+        $csv_file = '';
         $mimesCSV = array('application/vnd.ms-excel','text/plain','text/csv','text/tsv');// check ever type of Acceptable CSV Files
         if($_FILES['csv_file'] && in_array($_FILES['csv_file']['type'],$mimesCSV)){
             $csv_file = $_FILES['csv_file']['tmp_name'];
@@ -102,7 +103,10 @@ function uploadcsv_files_test(){
             }
         }
         else{
-            echo json_encode(['message'=>'<h4 span="padding-left:20px">Please Select .csv file</h4>']);
+            echo json_encode([
+                'message'=>'<h4 span="padding-left:20px">Please Select .csv file</h4>',
+                'csv_file'=>$csv_file
+            ]);
         }
     }
     
@@ -209,11 +213,64 @@ function get_field_then_import(){
     
     
 
-    $dim = $_POST['lines'][14];
+    $dim_default = $_POST['lines'][14];
+    $dim = explode(',',$dim_default)[0];
     $dim = trim($dim,'(mm)');
+    $dim = trim($dim,'(cm)');
     $dim = explode('x',$dim);
     $lnt = $dim[0];
     $wdt = $dim[1];
+    $ht  = $dim[2];
+    if(strpos($dim_default,'(mm)')){
+        if(count(explode('D:',$dim_default))>1){
+            $lnt = preg_replace("/[^0-9\.]/", '', $dim[0])/1000 * 1;
+            $wdt = preg_replace("/[^0-9\.]/", '', $dim[0])/1000 * 1;
+            $ht  = preg_replace("/[^0-9\.]/", '', $dim[0])/1000 * 1;
+        }
+        else{
+            $lnt = $dim[0]/1000;
+            $wdt = $dim[1]/1000;
+            $ht  = $dim[2]/1000;
+        }
+        
+    }
+    else if (strpos($dim_default,'(cm)')){
+        if(count(explode('D:',$dim_default))>1){
+            $lnt = preg_replace("/[^0-9\.]/", '', $dim[0]);
+            $wdt = preg_replace("/[^0-9\.]/", '', $dim[0]);
+            $ht  = preg_replace("/[^0-9\.]/", '', $dim[0]);
+        }
+        else{
+
+            $lnt = $dim[0];
+            $wdt = $dim[1];
+            $ht  = $dim[2];
+        }
+        
+        
+    }
+    else{
+        
+        $diameter = explode(',',$dim_default)[0];
+        
+        $string = $diameter;
+        $diam =  preg_replace("/[^0-9\.]/", '', $string);
+
+        $lnt = $diam;
+        $wdt = $diam;
+        $ht  = $diam;
+
+        if(strpos($diameter,'mm')){
+            $lnt = $lnt / 1000;
+            $wdt = $wdt / 1000;
+            $ht = $ht /1000;
+        }
+        
+
+    }
+    
+
+
     $sku = $_POST['lines'][1];
 
     $prd = new DSI_Products();
@@ -298,7 +355,7 @@ function get_field_then_import(){
                 'category'=> $categories,
                 'length'=>$lnt,
                 'width'=>$wdt,
-                'height'=>'0',
+                'height'=>$ht,
                 'weight'=>$_POST['lines'][12],
                 'product_type', 'simple'
             ];
@@ -352,7 +409,7 @@ function get_field_then_import(){
             'category'=> $categories,
             'length'=>$lnt,
             'width'=>$wdt,
-            'height'=>'0',
+            'height'=>$ht,
             'weight'=>$_POST['lines'][12],
             'product_type', 'simple'
         ];

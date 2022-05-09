@@ -31,6 +31,13 @@
        <td>Wordpress is treating SKU Qsalt-62 and QSALT-62N the same</td>
        <td>Change the wc_product_function() to basic global[$wpdb] to get an existing SKU</td>
    </tr> 
+   <tr>
+       <td>5.5.2022</td>
+       <td>Fixed Dimension format</td>
+       <td>Use UNIT RRP column instead of Unit Price</td>
+       <td>Wordpress is treating SKU Qsalt-62 and QSALT-62N the same</td>
+       <td>Change the wc_product_function() to basic global[$wpdb] to get an existing SKU</td>
+   </tr> 
 </table>
 <hr>
 <h2>For idropship </h2>

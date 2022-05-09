@@ -662,7 +662,7 @@ class DSI_Products extends DSI_Loader{
         $this->dsi_product_update_meta( $post_id, '_weight', $args['weight'] );
         $this->dsi_product_update_meta( $post_id, '_length', $args['length'] );
         $this->dsi_product_update_meta( $post_id, '_width', $args['width'] );
-        $this->dsi_product_update_meta( $post_id, '_height', 0 );
+        $this->dsi_product_update_meta( $post_id, '_height', $args['height']);
         $this->dsi_product_update_meta( $post_id, '_images', $args['thumbnail']);
         $this->dsi_product_update_meta( $post_id, '_product_attributes', array() );
         $this->dsi_product_update_meta( $post_id, 'sale_price_dates_from', '' );
@@ -775,7 +775,7 @@ class DSI_Products extends DSI_Loader{
         $this->dsi_product_update_meta( $post_id, '_weight', $args['weight'] );
         $this->dsi_product_update_meta( $post_id, '_length', $args['length'] );
         $this->dsi_product_update_meta( $post_id, '_width', $args['width'] );
-        $this->dsi_product_update_meta( $post_id, '_height', 0 );
+        $this->dsi_product_update_meta( $post_id, '_height', $args['height'] );
         $this->dsi_product_update_meta( $post_id, '_product_attributes', array() );
         $this->dsi_product_update_meta( $post_id, 'sale_price_dates_from', '' );
         $this->dsi_product_update_meta( $post_id, 'sale_price_dates_to', '' );

@@ -50,13 +50,65 @@ use Automattic\WooCommerce\Admin\API\Products;
     //     $delete_file = unlink($attachment_path);
     // }
     global $wpdb;
-//     $wpdb->query("DELETE FROM wp_terms WHERE term_id IN (SELECT term_id FROM wp_term_taxonomy WHERE taxonomy LIKE 'pa_%')");
-// $wpdb->query("DELETE FROM wp_term_taxonomy WHERE taxonomy LIKE 'pa_%'");
-// $wpdb->query("DELETE FROM wp_term_relationships WHERE term_taxonomy_id not IN (SELECT term_taxonomy_id FROM wp_term_taxonomy)");
-// $wpdb->query("DELETE FROM wp_term_relationships WHERE object_id IN (SELECT ID FROM wp_posts WHERE post_type IN ('product','product_variation'))");
-// $wpdb->query("DELETE FROM wp_postmeta WHERE post_id IN (SELECT ID FROM wp_posts WHERE post_type IN ('product','product_variation'))");
-// $wpdb->query("DELETE FROM wp_posts WHERE post_type IN ('product','product_variation')");
-// $wpdb->query("DELETE pm FROM wp_postmeta pm LEFT JOIN wp_posts wp ON wp.ID = pm.post_id WHERE wp.ID IS NULL");
+    
+
+    // $dim_default = "D:6.7(cm), 0.221L, 0.8Kg/L";
+
+    // $dim = explode(',',$dim_default)[0];
+    // $dim = trim($dim,'(mm)');
+    // $dim = trim($dim,'(cm)');
+    // $dim = explode('x',$dim);
+    // $lnt = $dim[0];
+    // $wdt = $dim[1];
+    // $ht  = $dim[2];
+    // if(strpos($dim_default,'(mm)')){
+    //     if(count(explode('D:',$dim_default))>1){
+    //         $lnt = preg_replace("/[^0-9\.]/", '', $dim[0])/1000 * 1;
+    //         $wdt = preg_replace("/[^0-9\.]/", '', $dim[0])/1000 * 1;
+    //         $ht  = preg_replace("/[^0-9\.]/", '', $dim[0])/1000 * 1;
+    //     }
+    //     else{
+    //         $lnt = $dim[0]/1000;
+    //         $wdt = $dim[1]/1000;
+    //         $ht  = $dim[2]/1000;
+    //     }
+        
+    // }
+    // else if (strpos($dim_default,'(cm)')){
+    //     if(count(explode('D:',$dim_default))>1){
+    //         $lnt = preg_replace("/[^0-9\.]/", '', $dim[0]);
+    //         $wdt = preg_replace("/[^0-9\.]/", '', $dim[0]);
+    //         $ht  = preg_replace("/[^0-9\.]/", '', $dim[0]);
+    //     }
+    //     else{
+
+    //         $lnt = $dim[0];
+    //         $wdt = $dim[1];
+    //         $ht  = $dim[2];
+    //     }
+        
+        
+    // }
+    // else{
+        
+    //     $diameter = explode(',',$dim_default)[0];
+        
+    //     $string = $diameter;
+    //     $diam =  preg_replace("/[^0-9\.]/", '', $string);
+
+    //     $lnt = $diam;
+    //     $wdt = $diam;
+    //     $ht  = $diam;
+
+    //     if(strpos($diameter,'mm')){
+    //         $lnt = $lnt / 1000;
+    //         $wdt = $wdt / 1000;
+    //         $ht = $ht /1000;
+    //     }
+        
+
+    // }
+    // echo "<br>" . $lnt . "x" . $wdt . "x" . $ht;
 ?>
 <hr>
 
@@ -81,8 +133,8 @@ use Automattic\WooCommerce\Admin\API\Products;
                     <input type='file' name='csv_file' id='csv_file'>
                 </td>
                 <td>
-                    <button id='delete_all_p' class='button'>Delete All Product (Dev Purposes only)</button>
-                    <button id='test12' onclick='jQuery("#csv_file").trigger("change")' class='button'>Test Ajax Script</button>
+                    <button disabled id='delete_all_p' class='button'>Delete All Product (Dev Purposes only)</button>
+                    <button disabled id='test12' onclick='jQuery("#csv_file").trigger("change")' class='button'>Test Ajax Script</button>
                     <div id='testDiv'></div>
                     <div id='delete_ajxdiv'>
                         
